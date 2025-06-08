@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:17
+    container_name: vagabounds-db
+    restart: always
+    environment:
+      POSTGRES_DB: vagabounds
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - vagabounds-network
+
+volumes:
+  db_data:
+
+networks:
+  vagabounds-network:
+    driver: bridge

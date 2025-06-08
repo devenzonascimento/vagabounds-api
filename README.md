@@ -116,26 +116,6 @@ Entidades principais (nomes em Inglês) com `id: Long` auto-increment:
 - Lombok
 - Spring Boot DevTools
 
-**Iniciando o Projeto Spring Boot:**
-
-```bash
-# Criar projeto via Spring Initializr (start.spring.io)
-# Dependencies: Spring Web, Spring Data JPA, PostgreSQL Driver,
-# Spring Security, Jakarta Validation, Lombok, Springdoc OpenAPI
-
-git clone git@github.com:devenzonascimento/vagabounds-api.git
-cd vagabounds-api
-
-# Configurar aplicação (application.properties ou .env)
-# SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/vagabounds
-# SPRING_DATASOURCE_USERNAME=postgres
-# SPRING_DATASOURCE_PASSWORD=senha
-# JWT_SECRET=secreto
-
-./mvnw clean install
-./mvnw spring-boot:run
-```
-
 ---
 
 ## Organização de Código e Padrões
@@ -162,7 +142,7 @@ src
 ## To-Do List de Features
 
 * [x] Projeto inicial via Spring Initializr
-* [ ] Configurar Docker Compose para PostgreSQL
+* [x] Configurar Docker Compose para PostgreSQL
 * [ ] **AuthenticationService** (JWT)
 * [ ] CRUD de **Company**
 * [ ] CRUD de **Job** com regras de deadline
