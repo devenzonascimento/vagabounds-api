@@ -1,15 +1,22 @@
 package vagabounds.controllers;
 
-import vagabounds.dtos.auth.*;
-import vagabounds.dtos.auth.RegisterCompanyRequest;
-import vagabounds.security.JwtUtil;
-import vagabounds.security.AppUserDetailsService;
-import vagabounds.services.AuthService;
-import org.springframework.http.*;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.security.authentication.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import vagabounds.dtos.auth.AuthRequest;
+import vagabounds.dtos.auth.AuthResponse;
+import vagabounds.dtos.auth.RegisterCandidateRequest;
+import vagabounds.dtos.auth.RegisterCompanyRequest;
+import vagabounds.security.AppUserDetailsService;
+import vagabounds.security.JwtUtil;
+import vagabounds.services.AuthService;
 
 @RestController
 @RequestMapping("/auth")
@@ -40,8 +47,15 @@ public class AuthController {
     }
 
     @PostMapping("/register-company")
-    public ResponseEntity<String> register(@RequestBody RegisterCompanyRequest request) {
+    public ResponseEntity<String> registerCompany(@RequestBody RegisterCompanyRequest request) {
         authService.registerCompany(request);
+
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @PostMapping("/register-candidate")
+    public ResponseEntity<String> registerCandidate(@RequestBody RegisterCandidateRequest request) {
+        authService.registerCandidate(request);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

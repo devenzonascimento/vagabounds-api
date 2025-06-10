@@ -11,8 +11,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "company")
-public class Company {
+@Table(name = "candidate")
+public class Candidate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -21,8 +21,8 @@ public class Company {
     @JoinColumn(name="account_id", unique=true)
     private Account account;
 
-    @Column(name = "cnpj", nullable = false, unique = true, length = 18)
-    private String cnpj;
+    @Column(name = "cpf", nullable = false, unique = true, length = 14)
+    private String cpf;
 
     @Column(name = "name", nullable = false)
     private String name;
