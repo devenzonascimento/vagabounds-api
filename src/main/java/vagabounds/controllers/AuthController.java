@@ -1,26 +1,30 @@
 package vagabounds.controllers;
 
 import vagabounds.dtos.auth.*;
-import vagabounds.security.AppUserDetailsService;
+import vagabounds.dtos.auth.RegisterCompanyRequest;
 import vagabounds.security.JwtUtil;
+import vagabounds.security.AppUserDetailsService;
+import vagabounds.services.AuthService;
 import org.springframework.http.*;
-import org.springframework.security.authentication.*;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.authentication.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+    @Autowired
+    AuthenticationManager authManager;
 
-    private final AuthenticationManager authManager;
-    private final AppUserDetailsService userDetailsService;
-    private final JwtUtil jwtUtil;
+    @Autowired
+    AppUserDetailsService userDetailsService;
 
-    public AuthController(AuthenticationManager am, AppUserDetailsService uds, JwtUtil jwtUtil) {
-        this.authManager = am;
-        this.userDetailsService = uds;
-        this.jwtUtil = jwtUtil;
-    }
+    @Autowired
+    JwtUtil jwtUtil;
+
+    @Autowired
+    AuthService authService;
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest req) {
@@ -33,5 +37,12 @@ public class AuthController {
         String token = jwtUtil.generateToken(user);
 
         return ResponseEntity.ok(new AuthResponse(token));
+    }
+
+    @PostMapping("/register-company")
+    public ResponseEntity<String> register(@RequestBody RegisterCompanyRequest request) {
+        authService.registerCompany(request);
+
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }
