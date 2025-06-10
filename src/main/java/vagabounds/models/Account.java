@@ -10,14 +10,13 @@ import vagabounds.security.Role;
 import java.util.HashSet;
 import java.util.Set;
 
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 @Entity
-@Table(name = "users")
-public class User {
+@Table(name = "account")
+public class Account {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -29,8 +28,8 @@ public class User {
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
-        name = "user_roles",
-        joinColumns = @JoinColumn(name = "user_id")
+        name = "account_roles",
+        joinColumns = @JoinColumn(name = "account_id")
     )
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
