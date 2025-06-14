@@ -9,6 +9,8 @@ import vagabounds.models.GroupMembershipId;
 import vagabounds.repositories.CompaniesGroupRepository;
 import vagabounds.repositories.CompanyRepository;
 import vagabounds.repositories.GroupMembershipRepository;
+import vagabounds.security.SecurityUtils;
+import vagabounds.utils.Utils;
 
 @Service
 public class CompaniesGroupService {
@@ -21,9 +23,8 @@ public class CompaniesGroupService {
     @Autowired
     GroupMembershipRepository membershipRepository;
 
-    public void createGroup(Long accountId, String groupName) {
-        Company company = companyRepository.findByAccountId(accountId)
-            .orElseThrow(() -> new RuntimeException("Company not found"));
+    public void createGroup(String groupName) {
+        var company = getCurrentCompany();
 
         CompaniesGroup group = new CompaniesGroup();
         group.setName(groupName);
@@ -37,5 +38,23 @@ public class CompaniesGroupService {
         );
 
         membershipRepository.save(membership);
+    }
+
+    public CompaniesGroup findById(Long groupId) {
+        var company = getCurrentCompany();
+
+        var groups = company.getMemberships()
+            .stream()
+            .map(GroupMembership::getGroup)
+            .toList();
+
+        return Utils.find(groups, g -> g.getId().equals(groupId));
+    }
+
+    private Company getCurrentCompany() {
+        var accountId = SecurityUtils.getAccountId();
+
+        return companyRepository.findByAccountId(accountId)
+            .orElseThrow(() -> new RuntimeException("Company not found"));
     }
 }

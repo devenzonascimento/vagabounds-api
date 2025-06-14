@@ -4,11 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import vagabounds.security.SecurityUtils;
+import org.springframework.web.bind.annotation.*;
+import vagabounds.dtos.companiesgroup.CompaniesGroupSummary;
 import vagabounds.services.CompaniesGroupService;
 
 @RestController
@@ -20,10 +17,15 @@ public class CompaniesGroupController {
     @PostMapping("create/{groupName}")
     @PreAuthorize("hasRole('COMPANY')")
     public ResponseEntity<Void> createGroup(@PathVariable String groupName) {
-        Long accountId = SecurityUtils.getAccountId();
-
-        companiesGroupService.createGroup(accountId, groupName);
+        companiesGroupService.createGroup(groupName);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @GetMapping("/{groupId}")
+    public ResponseEntity<CompaniesGroupSummary> findById(@PathVariable Long groupId) {
+        var group = companiesGroupService.findById(groupId);
+
+        return ResponseEntity.ok(CompaniesGroupSummary.fromCompaniesGroup(group));
     }
 }
