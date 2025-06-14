@@ -1,31 +1,34 @@
 package vagabounds.security;
 
-import vagabounds.models.Account;
 import vagabounds.repositories.AccountRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.*;
-
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class AppUserDetailsService implements UserDetailsService {
-    private final AccountRepository repo;
-    public AppUserDetailsService(AccountRepository repo) { this.repo = repo; }
+    @Autowired
+    AccountRepository accountRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Account user = repo.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    public AppUserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        var account = accountRepository.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("Account not found for email: " + email));
 
-        var authorities = user.getRoles().stream()
-                .map(r -> new SimpleGrantedAuthority(r.name()))
-                .collect(Collectors.toList());
+        var authorities = account.getRoles().stream()
+            .map(role -> new SimpleGrantedAuthority(role.name()))
+            .collect(Collectors.toList());
 
-        return new org.springframework.security.core.userdetails.User(
-                user.getEmail(),
-                user.getPassword(),
-                authorities
+        return new AppUserDetails(
+            account.getId(),
+            account.getEmail(),
+            account.getPassword(),
+            Set.copyOf(authorities)
         );
     }
 }

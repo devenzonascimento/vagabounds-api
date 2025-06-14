@@ -14,6 +14,7 @@ import vagabounds.dtos.auth.AuthRequest;
 import vagabounds.dtos.auth.AuthResponse;
 import vagabounds.dtos.auth.RegisterCandidateRequest;
 import vagabounds.dtos.auth.RegisterCompanyRequest;
+import vagabounds.security.AppUserDetails;
 import vagabounds.security.AppUserDetailsService;
 import vagabounds.security.JwtUtil;
 import vagabounds.services.AuthService;
@@ -39,7 +40,7 @@ public class AuthController {
             new UsernamePasswordAuthenticationToken(req.email(), req.password())
         );
 
-        UserDetails user = userDetailsService.loadUserByUsername(req.email());
+        AppUserDetails user = userDetailsService.loadUserByUsername(req.email());
 
         String token = jwtUtil.generateToken(user);
 
