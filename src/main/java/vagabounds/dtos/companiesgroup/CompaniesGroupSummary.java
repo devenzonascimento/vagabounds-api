@@ -13,6 +13,10 @@ public record CompaniesGroupSummary(
     List<CompanySummary> members
 ) {
     public static CompaniesGroupSummary fromCompaniesGroup(CompaniesGroup group) {
+        if (group == null) {
+            return null;
+        }
+
         List<CompanySummary> admins = new ArrayList<>();
         List<CompanySummary> members = new ArrayList<>();
 
