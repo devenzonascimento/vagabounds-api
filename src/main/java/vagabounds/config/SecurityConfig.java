@@ -33,7 +33,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        var authFilter = new JwtAuthenticationFilter(jwtUtil);
+        var authFilter = new JwtAuthenticationFilter(uds, jwtUtil);
 
         http
             .csrf().disable()

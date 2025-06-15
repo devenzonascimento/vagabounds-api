@@ -14,27 +14,15 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
-@Table(name = "companies")
-public class Company {
+@Table(name = "groups")
+public class Group {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "account_id", unique = true)
-    private Account account;
-
-    @Column(name = "cnpj", nullable = false, unique = true, length = 18)
-    private String cnpj;
-
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "address", nullable = false)
-    private String address;
-
-    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<GroupMembership> memberships = new HashSet<>();
-
-    // TODO: COLOCAR O RESTO DOS ATRIBUTOS E RELACIONAMENTOS
 }
