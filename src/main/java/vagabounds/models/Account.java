@@ -15,9 +15,10 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
-@Table(name = "account")
+@Table(name = "accounts")
 public class Account {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, unique = true)
@@ -28,7 +29,7 @@ public class Account {
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
-        name = "account_roles",
+        name = "accounts_roles",
         joinColumns = @JoinColumn(name = "account_id")
     )
     @Enumerated(EnumType.STRING)

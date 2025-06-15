@@ -14,14 +14,14 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
-@Table(name = "company")
+@Table(name = "companies")
 public class Company {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne
-    @JoinColumn(name="account_id", unique=true)
+    @JoinColumn(name = "account_id", unique = true)
     private Account account;
 
     @Column(name = "cnpj", nullable = false, unique = true, length = 18)
