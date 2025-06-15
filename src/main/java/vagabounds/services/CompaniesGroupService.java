@@ -2,7 +2,8 @@ package vagabounds.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import vagabounds.dtos.companiesgroup.AddMemberToGroupRequest;
+import vagabounds.dtos.companiesgroup.AddMemberRequest;
+import vagabounds.dtos.companiesgroup.RemoveMemberRequest;
 import vagabounds.models.CompaniesGroup;
 import vagabounds.models.Company;
 import vagabounds.models.GroupMembership;
@@ -41,19 +42,21 @@ public class CompaniesGroupService {
         membershipRepository.save(membership);
     }
 
-    public void addMemberToGroup(AddMemberToGroupRequest request) {
+    public void addMember(AddMemberRequest request) {
         var company = getCurrentCompany();
 
-        var adminGroups = company.getMemberships()
-            .stream()
-            .filter(GroupMembership::getIsAdmin)
-            .map(GroupMembership::getGroup)
-            .toList();
-
-        var group = Utils.find(adminGroups, g -> g.getId().equals(request.groupId()));
+        var group = groupRepository.findById(request.groupId()).orElse(null);
 
         if (group == null) {
-            throw new RuntimeException("Group not found or you don't have admin access to add new members on group.");
+            throw new RuntimeException("Group not found.");
+        }
+
+        var isAdminOnThisGroup = group.getMemberships()
+            .stream()
+            .anyMatch(m -> m.getIsAdmin() && m.getCompany().equals(company));
+
+        if (!isAdminOnThisGroup) {
+            throw new RuntimeException("You don't have admin access to add members on group.");
         }
 
         var alreadyGroupMember = group.getMemberships()
@@ -80,6 +83,36 @@ public class CompaniesGroupService {
         membershipRepository.save(membership);
     }
 
+    public void removeMember(RemoveMemberRequest request) {
+        var company = getCurrentCompany();
+
+        var group = groupRepository.findById(request.groupId()).orElse(null);
+
+        if (group == null) {
+            throw new RuntimeException("Group not found.");
+        }
+
+        var isAdminOnThisGroup = group.getMemberships()
+            .stream()
+            .anyMatch(m -> m.getIsAdmin() && m.getCompany().equals(company));
+
+        if (!isAdminOnThisGroup) {
+            throw new RuntimeException("You don't have admin access to remove members on group.");
+        }
+
+        var membership = Utils.find(
+            group.getMemberships(),
+            m -> m.getCompany().getId().equals(request.memberId())
+        );
+
+        if (membership == null) {
+            throw new RuntimeException("The member informed is not part of the group.");
+        }
+
+        group.getMemberships().remove(membership);
+        membershipRepository.deleteById(membership.getId());
+    }
+
     public CompaniesGroup findById(Long groupId) {
         var company = getCurrentCompany();
 
@@ -95,6 +128,6 @@ public class CompaniesGroupService {
         var accountId = SecurityUtils.getAccountId();
 
         return companyRepository.findByAccountId(accountId)
-            .orElseThrow(() -> new RuntimeException("Company not found"));
+            .orElseThrow(() -> new RuntimeException("Company not found."));
     }
 }
