@@ -2,25 +2,25 @@ package vagabounds.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import vagabounds.dtos.companiesgroup.AddMemberRequest;
-import vagabounds.dtos.companiesgroup.RemoveMemberRequest;
-import vagabounds.models.CompaniesGroup;
+import vagabounds.dtos.group.AddMemberRequest;
+import vagabounds.dtos.group.RemoveMemberRequest;
+import vagabounds.models.Group;
 import vagabounds.models.Company;
 import vagabounds.models.GroupMembership;
 import vagabounds.models.GroupMembershipId;
-import vagabounds.repositories.CompaniesGroupRepository;
+import vagabounds.repositories.GroupRepository;
 import vagabounds.repositories.CompanyRepository;
 import vagabounds.repositories.GroupMembershipRepository;
 import vagabounds.security.SecurityUtils;
 import vagabounds.utils.Utils;
 
 @Service
-public class CompaniesGroupService {
+public class GroupService {
     @Autowired
     CompanyRepository companyRepository;
 
     @Autowired
-    CompaniesGroupRepository groupRepository;
+    GroupRepository groupRepository;
 
     @Autowired
     GroupMembershipRepository membershipRepository;
@@ -28,7 +28,7 @@ public class CompaniesGroupService {
     public void createGroup(String groupName) {
         var company = getCurrentCompany();
 
-        CompaniesGroup group = new CompaniesGroup();
+        Group group = new Group();
         group.setName(groupName);
         group = groupRepository.save(group);
 
@@ -113,7 +113,7 @@ public class CompaniesGroupService {
         membershipRepository.deleteById(membership.getId());
     }
 
-    public CompaniesGroup findById(Long groupId) {
+    public Group findById(Long groupId) {
         var company = getCurrentCompany();
 
         var groups = company.getMemberships()

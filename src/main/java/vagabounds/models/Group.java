@@ -14,8 +14,8 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
-@Table(name = "companies_group")
-public class CompaniesGroup {
+@Table(name = "groups")
+public class Group {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

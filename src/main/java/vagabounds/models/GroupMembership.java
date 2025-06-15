@@ -24,7 +24,7 @@ public class GroupMembership {
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("groupId")
     @JoinColumn(name = "group_id")
-    private CompaniesGroup group;
+    private Group group;
 
     @Column(nullable = false)
     private Boolean isAdmin = false;

@@ -1,18 +1,18 @@
-package vagabounds.dtos.companiesgroup;
+package vagabounds.dtos.group;
 
 import vagabounds.dtos.company.CompanySummary;
-import vagabounds.models.CompaniesGroup;
+import vagabounds.models.Group;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public record CompaniesGroupSummary(
+public record GroupCompaniesSummary(
     Long id,
     String name,
     List<CompanySummary> admins,
     List<CompanySummary> members
 ) {
-    public static CompaniesGroupSummary fromCompaniesGroup(CompaniesGroup group) {
+    public static GroupCompaniesSummary fromGroup(Group group) {
         if (group == null) {
             return null;
         }
@@ -28,7 +28,7 @@ public record CompaniesGroupSummary(
             }
         });
 
-        return new CompaniesGroupSummary(
+        return new GroupCompaniesSummary(
             group.getId(),
             group.getName(),
             admins,

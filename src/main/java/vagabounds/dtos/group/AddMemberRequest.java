@@ -1,4 +1,4 @@
-package vagabounds.dtos.companiesgroup;
+package vagabounds.dtos.group;
 
 import jakarta.validation.constraints.NotNull;
 

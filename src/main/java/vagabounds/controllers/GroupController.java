@@ -6,21 +6,21 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import vagabounds.dtos.companiesgroup.AddMemberRequest;
-import vagabounds.dtos.companiesgroup.CompaniesGroupSummary;
-import vagabounds.dtos.companiesgroup.RemoveMemberRequest;
-import vagabounds.services.CompaniesGroupService;
+import vagabounds.dtos.group.AddMemberRequest;
+import vagabounds.dtos.group.GroupCompaniesSummary;
+import vagabounds.dtos.group.RemoveMemberRequest;
+import vagabounds.services.GroupService;
 
 @RestController
-@RequestMapping("/companies-group")
-public class CompaniesGroupController {
+@RequestMapping("/group")
+public class GroupController {
     @Autowired
-    CompaniesGroupService companiesGroupService;
+    GroupService groupService;
 
     @PostMapping("create/{groupName}")
     @PreAuthorize("hasRole('COMPANY')")
     public ResponseEntity<Void> createGroup(@PathVariable String groupName) {
-        companiesGroupService.createGroup(groupName);
+        groupService.createGroup(groupName);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
@@ -28,7 +28,7 @@ public class CompaniesGroupController {
     @PostMapping("add-member")
     @PreAuthorize("hasRole('COMPANY')")
     public ResponseEntity<Void> addMember(@RequestBody @Valid AddMemberRequest request) {
-        companiesGroupService.addMember(request);
+        groupService.addMember(request);
 
         return ResponseEntity.status(HttpStatus.OK).build();
     }
@@ -36,16 +36,16 @@ public class CompaniesGroupController {
     @PostMapping("remove-member")
     @PreAuthorize("hasRole('COMPANY')")
     public ResponseEntity<Void> removeMember(@RequestBody @Valid RemoveMemberRequest request) {
-        companiesGroupService.removeMember(request);
+        groupService.removeMember(request);
 
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @GetMapping("/{groupId}")
     @PreAuthorize("hasRole('COMPANY')")
-    public ResponseEntity<CompaniesGroupSummary> findById(@PathVariable Long groupId) {
-        var group = companiesGroupService.findById(groupId);
+    public ResponseEntity<GroupCompaniesSummary> findById(@PathVariable Long groupId) {
+        var group = groupService.findById(groupId);
 
-        return ResponseEntity.ok(CompaniesGroupSummary.fromCompaniesGroup(group));
+        return ResponseEntity.ok(GroupCompaniesSummary.fromGroup(group));
     }
 }
