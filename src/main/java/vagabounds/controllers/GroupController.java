@@ -7,9 +7,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vagabounds.dtos.group.AddMemberRequest;
-import vagabounds.dtos.group.GroupCompaniesSummary;
+import vagabounds.dtos.group.GroupCompaniesDTO;
+import vagabounds.dtos.group.GroupDTO;
 import vagabounds.dtos.group.RemoveMemberRequest;
 import vagabounds.services.GroupService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/group")
@@ -41,11 +44,19 @@ public class GroupController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+    @GetMapping
+    @PreAuthorize("hasRole('COMPANY')")
+    public ResponseEntity<List<GroupDTO>> findAll() {
+        var groups = groupService.findAll();
+
+        return ResponseEntity.ok(GroupDTO.fromGroups(groups));
+    }
+
     @GetMapping("/{groupId}")
     @PreAuthorize("hasRole('COMPANY')")
-    public ResponseEntity<GroupCompaniesSummary> findById(@PathVariable Long groupId) {
+    public ResponseEntity<GroupCompaniesDTO> findById(@PathVariable Long groupId) {
         var group = groupService.findById(groupId);
 
-        return ResponseEntity.ok(GroupCompaniesSummary.fromGroup(group));
+        return ResponseEntity.ok(GroupCompaniesDTO.fromGroup(group));
     }
 }

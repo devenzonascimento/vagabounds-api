@@ -14,6 +14,8 @@ import vagabounds.repositories.GroupMembershipRepository;
 import vagabounds.security.SecurityUtils;
 import vagabounds.utils.Utils;
 
+import java.util.List;
+
 @Service
 public class GroupService {
     @Autowired
@@ -111,6 +113,12 @@ public class GroupService {
 
         group.getMemberships().remove(membership);
         membershipRepository.deleteById(membership.getId());
+    }
+
+    public List<Group> findAll() {
+        var company = getCurrentCompany();
+
+        return company.getMemberships().stream().map(GroupMembership::getGroup).toList();
     }
 
     public Group findById(Long groupId) {
