@@ -10,5 +10,13 @@ public class Utils {
             .findFirst()
             .orElse(null);
     }
+
+    public enum JobType {
+        INTERNSHIP,
+        TRAINEE,
+        FULL_TIME,
+        PART_TIME
+    }
+
 }
 
