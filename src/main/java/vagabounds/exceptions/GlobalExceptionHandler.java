@@ -18,10 +18,20 @@ public class GlobalExceptionHandler {
     ) {
         List<Map<String, String>> errors = new ArrayList<>();
 
+        // Field errors (como @NotBlank, @Email, etc.)
         exception.getBindingResult().getFieldErrors().forEach(error -> {
             Map<String, String> errorMap = new HashMap<>();
 
             errorMap.put("field", error.getField());
+            errorMap.put("message", error.getDefaultMessage());
+
+            errors.add(errorMap);
+        });
+
+        // Global errors (como os levantados pelo ValidCandidateEducationValidator)
+        exception.getBindingResult().getGlobalErrors().forEach(error -> {
+            Map<String, String> errorMap = new HashMap<>();
+
             errorMap.put("message", error.getDefaultMessage());
 
             errors.add(errorMap);

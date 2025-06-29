@@ -5,10 +5,21 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record RegisterCompanyRequest(
-    @Email String email,
-    @Size(min = 8) String password,
-    @NotBlank String name,
-    @NotBlank String cnpj,
-    @NotBlank String address
+    @Email
+    @NotBlank
+    String email,
+
+    @Size(min = 8)
+    @NotBlank
+    String password,
+
+    @NotBlank
+    String name,
+
+    @NotBlank
+    String cnpj,
+
+    @NotBlank
+    String address
 ) {
 }
