@@ -34,7 +34,8 @@ public class Company {
     private String address;
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<GroupMembership> memberships = new HashSet<>();
+    private Set<Job> jobs = new HashSet<>();
 
-    // TODO: COLOCAR O RESTO DOS ATRIBUTOS E RELACIONAMENTOS
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<GroupMembership> memberships = new HashSet<>();
 }
