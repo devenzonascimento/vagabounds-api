@@ -64,12 +64,18 @@ public class AuthService {
             throw new RuntimeException("Failed to register account, already exists an account with the same email.");
         }
 
-        var candidate = new Candidate();
-        candidate.setName(request.name());
-        candidate.setAddress(request.address());
-
         var account = createAccount(request.email(), request.password(), Role.ROLE_CANDIDATE);
-        candidate.setAccount(account);
+
+        var candidate = new Candidate(
+            account,
+            request.name(),
+            request.address(),
+            request.education(),
+            request.course(),
+            request.semester(),
+            request.graduationYear(),
+            request.resumeURL()
+        );
 
         candidateRepository.save(candidate);
     }

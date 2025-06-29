@@ -17,8 +17,11 @@ public class AppUserDetailsService implements UserDetailsService {
 
     @Override
     public AppUserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        var account = accountRepository.findByEmail(email)
-            .orElseThrow(() -> new UsernameNotFoundException("Account not found for email: " + email));
+        var account = accountRepository.findByEmail(email).orElse(null);
+
+        if (account == null || account.getIsDeleted()) {
+            throw new UsernameNotFoundException("Account not found for email: " + email);
+        }
 
         var authorities = account.getRoles().stream()
             .map(role -> new SimpleGrantedAuthority(role.name()))
