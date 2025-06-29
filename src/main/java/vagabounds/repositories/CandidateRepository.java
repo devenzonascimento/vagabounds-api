@@ -6,5 +6,5 @@ import vagabounds.models.Candidate;
 import java.util.Optional;
 
 public interface CandidateRepository extends JpaRepository<Candidate, Long> {
-    Optional<Candidate> findByCpf(String cpf);
+    Optional<Candidate> findByEmail(String email);
 }

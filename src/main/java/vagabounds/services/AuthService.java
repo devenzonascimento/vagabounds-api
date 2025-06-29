@@ -52,18 +52,17 @@ public class AuthService {
 
     @Transactional
     public void registerCandidate(RegisterCandidateRequest request) {
-        Candidate candidateWithSameCpf = candidateRepository.findByCpf(request.cpf()).orElse(null);
+        var candidateWithSameEmail = candidateRepository.findByEmail(request.email()).orElse(null);
 
-        if (candidateWithSameCpf != null) {
-            throw new RuntimeException("Failed to register candidate account, already exists a candidate with the same cpf.");
+        if (candidateWithSameEmail != null) {
+            throw new RuntimeException("Failed to register candidate account, already exists a candidate with the same email.");
         }
 
-        Candidate candidate = new Candidate();
+        var candidate = new Candidate();
         candidate.setName(request.name());
-        candidate.setCpf(request.cpf());
         candidate.setAddress(request.address());
 
-        Account account = createAccount(request.email(), request.password(), Role.ROLE_CANDIDATE);
+        var account = createAccount(request.email(), request.password(), Role.ROLE_CANDIDATE);
         candidate.setAccount(account);
 
         candidateRepository.save(candidate);

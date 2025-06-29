@@ -8,7 +8,6 @@ public record RegisterCandidateRequest(
     @Email String email,
     @Size(min = 8) String password,
     @NotBlank String name,
-    @NotBlank String cpf,
     @NotBlank String address
 ) {
 }
