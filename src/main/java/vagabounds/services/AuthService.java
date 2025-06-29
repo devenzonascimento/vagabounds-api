@@ -33,6 +33,12 @@ public class AuthService {
 
     @Transactional
     public void registerCompany(RegisterCompanyRequest request) {
+        var accountWithSameEmail = accountRepository.findByEmail(request.email()).orElse(null);
+
+        if (accountWithSameEmail != null) {
+            throw new RuntimeException("Failed to register account, already exists an account with the same email.");
+        }
+
         Company companyWithSameCnpj = companyRepository.findByCnpj(request.cnpj()).orElse(null);
 
         if (companyWithSameCnpj != null) {
@@ -52,10 +58,10 @@ public class AuthService {
 
     @Transactional
     public void registerCandidate(RegisterCandidateRequest request) {
-        var candidateWithSameEmail = candidateRepository.findByEmail(request.email()).orElse(null);
+        var accountWithSameEmail = accountRepository.findByEmail(request.email()).orElse(null);
 
-        if (candidateWithSameEmail != null) {
-            throw new RuntimeException("Failed to register candidate account, already exists a candidate with the same email.");
+        if (accountWithSameEmail != null) {
+            throw new RuntimeException("Failed to register account, already exists an account with the same email.");
         }
 
         var candidate = new Candidate();
