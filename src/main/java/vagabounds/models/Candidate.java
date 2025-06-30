@@ -55,8 +55,8 @@ public class Candidate {
     // TODO: COLOCAR O RESTO DOS ATRIBUTOS E RELACIONAMENTOS
 
     /*
-    * Construtor para registrar um novo candidato
-    * */
+     * Construtor para registrar um novo candidato
+     * */
     public Candidate(
         Account account,
         String name,
@@ -67,6 +67,12 @@ public class Candidate {
         Integer graduationYear,
         String resumeUrl
     ) {
+        var errorMessage = validateEducation(education, course, semester, graduationYear);
+
+        if (!errorMessage.isBlank()) {
+            throw new RuntimeException(errorMessage);
+        }
+
         this.account = account;
         this.name = name;
         this.address = address;
@@ -77,5 +83,75 @@ public class Candidate {
         this.resumeUrl = resumeUrl;
         this.isDeleted = false;
         this.createdAt = LocalDateTime.now();
+    }
+
+    public void update(
+        String name,
+        String address,
+        CandidateEducation education,
+        String course,
+        Integer semester,
+        Integer graduationYear,
+        String resumeUrl
+    ) {
+        var errorMessage = validateEducation(education, course, semester, graduationYear);
+
+        if (!errorMessage.isBlank()) {
+            throw new RuntimeException(errorMessage);
+        }
+
+        if (name != null && !name.isBlank()) {
+            this.name = name;
+        }
+
+        if (address != null && !address.isBlank()) {
+            this.address = address;
+        }
+
+        if (education != null) {
+            this.education = education;
+        }
+
+        this.course = course;
+        this.semester = semester;
+        this.graduationYear = graduationYear;
+        this.resumeUrl = resumeUrl;
+
+        this.isDeleted = false;
+        this.createdAt = LocalDateTime.now();
+    }
+
+    public static String validateEducation(
+        CandidateEducation education,
+        String course,
+        Integer semester,
+        Integer graduationYear
+    ) {
+        if (education == CandidateEducation.NONE) {
+            return "";
+        }
+
+        // UNDERGRAD precisa de (course, semester, graduationYear)
+        if (education == CandidateEducation.UNDERGRAD) {
+            var isValid = (course != null && !course.isBlank())
+                && graduationYear != null
+                && semester != null;
+
+            if (!isValid) {
+                return "UNDERGRAD education requires course, semester and graduationYear";
+            }
+        }
+
+        // GRADUATED precisa de (course, graduationYear)
+        if (education == CandidateEducation.GRADUATE) {
+            var isValid = (course != null && !course.isBlank())
+                && graduationYear != null;
+
+            if (!isValid) {
+                return "GRADUATE education requires course and graduationYear";
+            }
+        }
+
+        return "";
     }
 }
