@@ -2,6 +2,8 @@ package vagabounds.models;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 public class Application {
 
@@ -23,7 +25,15 @@ public class Application {
     @JoinColumn(name = "candidate_name")
     private String candidateName;
 
+    /*
 
+    @JoinColumn(name = "candidate_resume")
+    private String candidateResume;
+
+     */
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
 
 }

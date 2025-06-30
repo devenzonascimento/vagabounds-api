@@ -26,20 +26,19 @@ public class ApplicationService {
     public void applyToJob (CandidateDTO candidateDTO, JobDTO jobDTO) {
 
         //TODO VERIFICAR SE O USUARIO ESTA LOGADO
+        if (){} throw new RuntimeException("You must be logged in to apply.");
 
 
-
-        //TODO VERIFCAR SE A VAGA ESTA ABERTA
-        if (jobDTO.isOpen()) {
-
-        }
+        if(jobDTO.isOpen()){
+            //TODO
+        } throw new RuntimeException("OOPS! the job you are applying is already closed.");
 
 
-        //TODO RETORNAR MENSAGEM DE ERRO, 'OOPS! THE JOB YOU ARE APPLYING IS ALREADY CLOSED'
+        if(jobDTO.jobType().equals("INTERNSHIP") && candidateDTO.education().equals("UNDERGRAD")){
+            //TODO
+        } throw  new RuntimeException("Sorry, you must be a student to apply.");
 
-        if(!jobDTO.isOpen()){
-            throw new RuntimeException("OOPS! THE JOB YOU ARE APPLYING IS ALREADY CLOSED");
-        }
+
     }
 
 
