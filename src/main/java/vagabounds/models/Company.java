@@ -21,7 +21,7 @@ public class Company {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "account_id", unique = true)
+    @JoinColumn(name = "account_id", nullable = false, unique = true)
     private Account account;
 
     @Column(name = "cnpj", nullable = false, unique = true, length = 18)
@@ -32,6 +32,9 @@ public class Company {
 
     @Column(name = "address", nullable = false)
     private String address;
+
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Job> jobs = new HashSet<>();

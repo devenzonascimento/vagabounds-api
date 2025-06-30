@@ -1,5 +1,6 @@
 package vagabounds.controllers;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +36,7 @@ public class AuthController {
     AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest req) {
+    public ResponseEntity<AuthResponse> login(@RequestBody @Valid AuthRequest req) {
         authManager.authenticate(
             new UsernamePasswordAuthenticationToken(req.email(), req.password())
         );
@@ -48,14 +49,14 @@ public class AuthController {
     }
 
     @PostMapping("/register-company")
-    public ResponseEntity<String> registerCompany(@RequestBody RegisterCompanyRequest request) {
+    public ResponseEntity<String> registerCompany(@RequestBody @Valid RegisterCompanyRequest request) {
         authService.registerCompany(request);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PostMapping("/register-candidate")
-    public ResponseEntity<String> registerCandidate(@RequestBody RegisterCandidateRequest request) {
+    public ResponseEntity<String> registerCandidate(@RequestBody @Valid RegisterCandidateRequest request) {
         authService.registerCandidate(request);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();

@@ -27,6 +27,9 @@ public class Account {
     @Column(nullable = false)
     private String password;
 
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
         name = "accounts_roles",

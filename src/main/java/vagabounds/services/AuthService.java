@@ -33,6 +33,12 @@ public class AuthService {
 
     @Transactional
     public void registerCompany(RegisterCompanyRequest request) {
+        var accountWithSameEmail = accountRepository.findByEmail(request.email()).orElse(null);
+
+        if (accountWithSameEmail != null) {
+            throw new RuntimeException("Failed to register account, already exists an account with the same email.");
+        }
+
         Company companyWithSameCnpj = companyRepository.findByCnpj(request.cnpj()).orElse(null);
 
         if (companyWithSameCnpj != null) {
@@ -52,19 +58,24 @@ public class AuthService {
 
     @Transactional
     public void registerCandidate(RegisterCandidateRequest request) {
-        Candidate candidateWithSameCpf = candidateRepository.findByCpf(request.cpf()).orElse(null);
+        var accountWithSameEmail = accountRepository.findByEmail(request.email()).orElse(null);
 
-        if (candidateWithSameCpf != null) {
-            throw new RuntimeException("Failed to register candidate account, already exists a candidate with the same cpf.");
+        if (accountWithSameEmail != null) {
+            throw new RuntimeException("Failed to register account, already exists an account with the same email.");
         }
 
-        Candidate candidate = new Candidate();
-        candidate.setName(request.name());
-        candidate.setCpf(request.cpf());
-        candidate.setAddress(request.address());
+        var account = createAccount(request.email(), request.password(), Role.ROLE_CANDIDATE);
 
-        Account account = createAccount(request.email(), request.password(), Role.ROLE_CANDIDATE);
-        candidate.setAccount(account);
+        var candidate = new Candidate(
+            account,
+            request.name(),
+            request.address(),
+            request.education(),
+            request.course(),
+            request.semester(),
+            request.graduationYear(),
+            request.resumeURL()
+        );
 
         candidateRepository.save(candidate);
     }
