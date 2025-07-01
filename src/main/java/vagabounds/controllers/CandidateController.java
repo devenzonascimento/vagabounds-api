@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vagabounds.dtos.candidate.CandidateDTO;
 import vagabounds.dtos.candidate.UpdateCandidateRequest;
@@ -32,6 +33,7 @@ public class CandidateController {
     }
 
     @GetMapping("/{candidateId}")
+    @PreAuthorize("hasRole('CANDIDATE')")
     public ResponseEntity<CandidateDTO> findById(@PathVariable Long candidateId) {
         var candidate = candidateService.findById(candidateId);
 
@@ -39,6 +41,7 @@ public class CandidateController {
     }
 
     @PutMapping
+    @PreAuthorize("hasRole('CANDIDATE')")
     public ResponseEntity<Void> update(@RequestBody @Valid UpdateCandidateRequest request) {
         candidateService.updateCandidate(request);
 
@@ -46,6 +49,7 @@ public class CandidateController {
     }
 
     @DeleteMapping("/{candidateId}")
+    @PreAuthorize("hasRole('CANDIDATE')")
     public ResponseEntity<Void> delete(@PathVariable Long candidateId) {
         candidateService.deleteCandidateAccount(candidateId);
 

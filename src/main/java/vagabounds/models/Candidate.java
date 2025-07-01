@@ -131,24 +131,24 @@ public class Candidate {
             return "";
         }
 
-        // UNDERGRAD precisa de (course, semester, graduationYear)
-        if (education == CandidateEducation.UNDERGRAD) {
+        // ENROLLED precisa de (course, semester, graduationYear)
+        if (education == CandidateEducation.ENROLLED) {
             var isValid = (course != null && !course.isBlank())
                 && graduationYear != null
                 && semester != null;
 
             if (!isValid) {
-                return "UNDERGRAD education requires course, semester and graduationYear";
+                return "ENROLLED education requires course, semester and graduationYear";
             }
         }
 
         // GRADUATED precisa de (course, graduationYear)
-        if (education == CandidateEducation.GRADUATE) {
+        if (education == CandidateEducation.GRADUATED) {
             var isValid = (course != null && !course.isBlank())
                 && graduationYear != null;
 
             if (!isValid) {
-                return "GRADUATE education requires course and graduationYear";
+                return "GRADUATED education requires course and graduationYear";
             }
         }
 
