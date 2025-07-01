@@ -2,17 +2,18 @@ package vagabounds.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import vagabounds.dtos.candidate.CandidateDTO;
-import vagabounds.dtos.job.JobDTO;
+import vagabounds.dtos.application.ApplyToJobRequest;
 import vagabounds.models.Application;
+import vagabounds.models.Candidate;
 import vagabounds.repositories.ApplicationRepository;
 import vagabounds.repositories.CandidateRepository;
 import vagabounds.repositories.JobRepository;
+import vagabounds.security.SecurityUtils;
 
+import java.util.HashSet;
 
 @Service
 public class ApplicationService {
-
     @Autowired
     CandidateRepository candidateRepository;
 
@@ -23,23 +24,40 @@ public class ApplicationService {
     ApplicationRepository applicationRepository;
 
 
-    public void applyToJob (CandidateDTO candidateDTO, JobDTO jobDTO) {
+    public void applyToJob(ApplyToJobRequest request) {
+        var candidate = getCurrentCandidate();
 
-        //TODO VERIFICAR SE O USUARIO ESTA LOGADO
-        if (){} throw new RuntimeException("You must be logged in to apply.");
+        var job = jobRepository.findById(request.jobId()).orElse(null);
 
+        if (job == null || job.getIsDeleted()) {
+            throw new RuntimeException("Job not found.");
+        }
 
-        if(jobDTO.isOpen()){
-            //TODO
-        } throw new RuntimeException("OOPS! the job you are applying is already closed.");
+        var applicationFound = applicationRepository.findByJobIdAndCandidateId(job.getId(), candidate.getId()).orElse(null);
 
+        if (applicationFound != null) {
+            throw new RuntimeException("You already applied to this job.");
+        }
 
-        if(jobDTO.jobType().equals("INTERNSHIP") && candidateDTO.education().equals("UNDERGRAD")){
-            //TODO
-        } throw  new RuntimeException("Sorry, you must be a student to apply.");
+        var jobApplication = new Application(
+            job,
+            candidate,
+            request.candidatePresentation(),
+            new HashSet<>(request.candidateSkills())
+        );
 
-
+        applicationRepository.save(jobApplication);
     }
 
+    private Candidate getCurrentCandidate() {
+        var accountId = SecurityUtils.getAccountId();
 
+        var candidate = candidateRepository.findByAccountId(accountId).orElse(null);
+
+        if (candidate == null || candidate.getIsDeleted()) {
+            throw new RuntimeException("Candidate not found.");
+        }
+
+        return candidate;
+    }
 }
