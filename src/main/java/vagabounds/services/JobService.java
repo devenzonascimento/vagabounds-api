@@ -11,7 +11,6 @@ import vagabounds.repositories.JobRepository;
 import vagabounds.security.SecurityUtils;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 @Service
@@ -26,14 +25,14 @@ public class JobService {
         var company = getCurrentCompany();
 
         var job = new Job(
-            company,
-            request.title(),
-            request.description(),
-            request.jobType(),
-            request.jobModality(),
-            request.requirements(),
-            request.desiredSkills(),
-            request.expiresAt()
+                company,
+                request.title(),
+                request.description(),
+                request.jobType(),
+                request.jobModality(),
+                request.requirements(),
+                request.desiredSkills(),
+                request.expiresAt()
         );
 
         jobRepository.save(job);
@@ -51,14 +50,14 @@ public class JobService {
         if (!job.getIsOpen() && job.getClosedAt() != null) {
             throw new RuntimeException("This job is closed and no longer allows information updates.");
         }
-        
+
         job.Update(
-            request.title(),
-            request.description(),
-            request.jobType(),
-            request.jobModality(),
-            request.requirements(),
-            request.desiredSkills()
+                request.title(),
+                request.description(),
+                request.jobType(),
+                request.jobModality(),
+                request.requirements(),
+                request.desiredSkills()
         );
 
         jobRepository.save(job);
@@ -96,13 +95,15 @@ public class JobService {
         return jobs.stream().filter(j -> !j.getIsDeleted()).toList();
     }
 
-    public void ExtendExpiresAt(Long id, LocalDateTime newExpiresAt) {
-        var job = jobRepository.findById(id).orElse(null);
+    public void extendExpiresAt(Long id, LocalDateTime newExpiresAt) {
+        var job = findById(id);
+        var company = getCurrentCompany();
 
-        if(newExpiresAt == null || newExpiresAt.isBefore(job.getExpiresAt()) || newExpiresAt.isEqual(job.getExpiresAt())) {
-            throw new RuntimeException("Invalid date to extends the deadline.");
+        if (!job.getCompany().getId().equals(company.getId())) {
+            throw new RuntimeException("You don't have permission to edit job informations, this job is not belongs to your company");
         }
-        job.setExpiresAt(newExpiresAt);
+
+        job.extendExpiresAt(newExpiresAt);
         jobRepository.save(job);
     }
 
@@ -110,6 +111,6 @@ public class JobService {
         var accountId = SecurityUtils.getAccountId();
 
         return companyRepository.findByAccountId(accountId)
-            .orElseThrow(() -> new RuntimeException("Company not found."));
+                .orElseThrow(() -> new RuntimeException("Company not found."));
     }
 }

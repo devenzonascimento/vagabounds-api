@@ -60,10 +60,10 @@ public class JobController {
         return ResponseEntity.ok(JobDTO.fromJobs(jobs));
     }
 
-    @PostMapping("/extends-ExpiresAt")
+    @PostMapping("/extends-expires-at")
     @PreAuthorize("hasRole('COMPANY')")
     public ResponseEntity<JobDTO> extendsExpiresAt(@RequestBody @Valid ExtendsExpiresAtRequest request) {
-        jobService.ExtendExpiresAt(request.jobId(), request.newExpiresAt());
+        jobService.extendExpiresAt(request.jobId(), request.newExpiresAt());
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 

@@ -7,23 +7,13 @@ import vagabounds.enums.JobType;
 
 import java.util.List;
 
-// TODO: Colocar as validações necessárias
-public record UpdateJobRequest (
+public record UpdateJobRequest(
         @NotNull
         Long jobId,
-
-        @NotBlank
         String title,
-
-        @NotBlank
         String description,
-
-        @NotNull
         JobType jobType,
-
-        @NotNull
         JobModality jobModality,
-
         List<String> requirements,
         List<String> desiredSkills
 ) {

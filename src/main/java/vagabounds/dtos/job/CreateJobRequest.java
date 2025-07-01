@@ -8,7 +8,7 @@ import vagabounds.enums.JobType;
 import java.time.LocalDateTime;
 import java.util.List;
 
-// TODO: Colocar as validações necessárias
+
 public record CreateJobRequest(
         @NotBlank
         String title,
@@ -28,11 +28,4 @@ public record CreateJobRequest(
         @NotNull
         LocalDateTime expiresAt
 ) {
-
-
-
-
-
-
-
 }

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import vagabounds.enums.JobModality;
 import vagabounds.enums.JobType;
+
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -64,16 +65,15 @@ public class Job {
     private Company company;
 
     public Job(
-        Company company,
-        String title,
-        String description,
-        JobType jobType,
-        JobModality jobModality,
-        List<String> requirements,
-        List<String> desiredSkills,
-        LocalDateTime expiresAt
-    )
-    {
+            Company company,
+            String title,
+            String description,
+            JobType jobType,
+            JobModality jobModality,
+            List<String> requirements,
+            List<String> desiredSkills,
+            LocalDateTime expiresAt
+    ) {
         this.company = company;
         this.title = title;
         this.description = description;
@@ -87,14 +87,14 @@ public class Job {
         this.closedAt = null;
         this.expiresAt = expiresAt;
     }
-    
+
     public void Update(
-        String title,
-        String description,
-        JobType jobType,
-        JobModality jobModality,
-        List<String> requirements,
-        List<String> desiredSkills
+            String title,
+            String description,
+            JobType jobType,
+            JobModality jobModality,
+            List<String> requirements,
+            List<String> desiredSkills
     ) {
         if (title != null) {
             setTitle(title);
@@ -121,14 +121,15 @@ public class Job {
         }
     }
 
-    public void ExtendExpiresAt (
-            boolean isOpen,
-            LocalDateTime expiresAt
+    public void extendExpiresAt(
+            LocalDateTime newExpiresAt
     ) {
-
-        if (!isOpen || expiresAt.isEqual(LocalDateTime.now()) || expiresAt.isAfter(LocalDateTime.now())) {
+        if (!isOpen && closedAt != null) {
             throw new RuntimeException("The job is already closed.");
         }
 
+        if (newExpiresAt == null || newExpiresAt.isBefore(expiresAt) || newExpiresAt.isEqual(expiresAt)) {
+            throw new RuntimeException("Invalid date to extends the deadline.");
+        }
     }
 }
