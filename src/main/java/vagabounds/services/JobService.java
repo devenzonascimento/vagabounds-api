@@ -10,7 +10,8 @@ import vagabounds.repositories.CompanyRepository;
 import vagabounds.repositories.JobRepository;
 import vagabounds.security.SecurityUtils;
 
-import java.util.HashSet;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -93,6 +94,16 @@ public class JobService {
         }
 
         return jobs.stream().filter(j -> !j.getIsDeleted()).toList();
+    }
+
+    public void ExtendExpiresAt(Long id, LocalDateTime newExpiresAt) {
+        var job = jobRepository.findById(id).orElse(null);
+
+        if(newExpiresAt == null || newExpiresAt.isBefore(job.getExpiresAt()) || newExpiresAt.isEqual(job.getExpiresAt())) {
+            throw new RuntimeException("Invalid date to extends the deadline.");
+        }
+        job.setExpiresAt(newExpiresAt);
+        jobRepository.save(job);
     }
 
     private Company getCurrentCompany() {

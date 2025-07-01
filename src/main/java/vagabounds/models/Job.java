@@ -120,4 +120,15 @@ public class Job {
             setDesiredSkills(new HashSet<>(desiredSkills));
         }
     }
+
+    public void ExtendExpiresAt (
+            boolean isOpen,
+            LocalDateTime expiresAt
+    ) {
+
+        if (!isOpen || expiresAt.isEqual(LocalDateTime.now()) || expiresAt.isAfter(LocalDateTime.now())) {
+            throw new RuntimeException("The job is already closed.");
+        }
+
+    }
 }
