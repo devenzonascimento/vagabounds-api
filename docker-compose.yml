@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:17
@@ -16,8 +14,25 @@ services:
     networks:
       - vagabounds-network
 
+  storage:
+    image: "minio/minio:RELEASE.2021-02-24T18-44-45Z"
+    container_name: vagabounds-storage
+    restart: always
+    ports:
+      - "9000:9000"        # Console e API
+      - "9001:9001"        # Console UI
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /mnt/data
+    volumes:
+      - minio_data:/data
+    networks:
+      - vagabounds-network
+
 volumes:
   db_data:
+  minio_data:
 
 networks:
   vagabounds-network:
