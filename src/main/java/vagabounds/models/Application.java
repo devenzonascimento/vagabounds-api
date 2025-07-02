@@ -18,7 +18,7 @@ import java.util.Set;
 @Entity
 @Table(name = "applications")
 public class Application {
-    private static final double MIN_PERCENTAGE_TO_MATCH = 80.0;
+    private static final double MIN_PERCENTAGE_TO_MATCH = 50.0;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

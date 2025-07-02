@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import vagabounds.dtos.job.RejectCandidateRequest;
 import vagabounds.dtos.job.CreateJobRequest;
 import vagabounds.dtos.job.JobDTO;
 import vagabounds.dtos.job.UpdateJobRequest;
@@ -57,5 +58,12 @@ public class JobController {
         var jobs = jobService.findAllJobsByCompany();
 
         return ResponseEntity.ok(JobDTO.fromJobs(jobs));
+    }
+
+    @PostMapping("reject-candidate")
+    @PreAuthorize("hasRole('COMPANY')")
+    public ResponseEntity<String> rejectCandidate(@RequestBody RejectCandidateRequest request) {
+        jobService.rejectCandidate(request);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

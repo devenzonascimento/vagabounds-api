@@ -4,13 +4,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import vagabounds.dtos.job.CreateJobRequest;
 import vagabounds.dtos.job.UpdateJobRequest;
+import vagabounds.dtos.job.RejectCandidateRequest;
+import vagabounds.models.Application;
+import vagabounds.models.Candidate;
 import vagabounds.models.Company;
 import vagabounds.models.Job;
 import vagabounds.repositories.CompanyRepository;
 import vagabounds.repositories.JobRepository;
 import vagabounds.security.SecurityUtils;
 
-import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -20,6 +22,12 @@ public class JobService {
 
     @Autowired
     CompanyRepository companyRepository;
+
+    @Autowired
+    CandidateService candidateService;
+
+    @Autowired
+    ApplicationService applicationService;
 
     public void createJob(CreateJobRequest request) {
         var company = getCurrentCompany();
@@ -100,5 +108,23 @@ public class JobService {
 
         return companyRepository.findByAccountId(accountId)
             .orElseThrow(() -> new RuntimeException("Company not found."));
+    }
+
+    public void rejectCandidate(RejectCandidateRequest request) {
+        Job job = this.findById(request.jobId());
+
+        if (!job.getCompany().getId().equals(this.getCurrentCompany().getId())) {
+            throw new RuntimeException("You can only reject your own candidates.");
+        }
+
+        Candidate candidate = candidateService.findById(request.candidateId());
+
+        if (candidate == null || candidate.getIsDeleted()) {
+            throw new RuntimeException("Candidate not found.");
+        }
+
+        applicationService.deleteApplication(job.getId(), candidate.getId());
+
+        //todo: criar o servido de email para o candidato que foi rejeitado
     }
 }

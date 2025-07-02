@@ -60,4 +60,15 @@ public class ApplicationService {
 
         return candidate;
     }
+
+    public void deleteApplication(Long jobId, Long candidateId) {
+
+        Application application = applicationRepository.findByJobIdAndCandidateId(jobId, candidateId).orElse(null);
+
+        if (application == null) {
+            throw new RuntimeException("Application not found.");
+        }
+
+        applicationRepository.deleteById(application.getId());
+    }
 }
