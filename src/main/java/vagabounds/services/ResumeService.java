@@ -1,5 +1,6 @@
 package vagabounds.services;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -7,7 +8,9 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import vagabounds.models.Application;
 import vagabounds.models.Candidate;
+import vagabounds.repositories.ApplicationRepository;
 import vagabounds.repositories.CandidateRepository;
 import vagabounds.repositories.StorageRepository;
 import vagabounds.security.SecurityUtils;
@@ -25,6 +28,9 @@ public class ResumeService {
 
     @Autowired
     CandidateRepository candidateRepository;
+
+    @Autowired
+    ApplicationRepository applicationRepository;
 
     public String storeCandidateResume(Candidate candidate, MultipartFile file) {
         var key = generateKey(candidate.getId(), candidate.getName(), file.getOriginalFilename());
@@ -44,6 +50,25 @@ public class ResumeService {
 
     public String loadCandidateResume(Candidate candidate) {
         return storageRepository.generatePresignedUrl(candidate.getResumeUrl(), 15 * 60);
+    }
+
+    @Transactional
+    public void cloneCurrentResumeToApplication(Application application, String originalResumePath) {
+        // Extrai o filename da key original
+        String filename = originalResumePath.substring(originalResumePath.lastIndexOf('/') + 1);
+
+        // Monta a nova key dentro de "application/{applicationId}/"
+        String targetKey = String.format("application/%d/%s", application.getId(), filename);
+
+        try {
+            storageRepository.clone(originalResumePath, targetKey);
+        } catch(Exception e) {
+            throw new RuntimeException("Failure to upload resume to storage. Error: " + e.getMessage());
+        }
+
+        application.setResumeUrl(targetKey);
+
+        applicationRepository.save(application);
     }
 
     private String generateKey(Long candidateId, String candidateName, String originalFileName) {

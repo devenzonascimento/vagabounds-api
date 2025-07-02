@@ -1,5 +1,6 @@
 package vagabounds.services;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import vagabounds.dtos.application.ApplyToJobRequest;
@@ -23,7 +24,10 @@ public class ApplicationService {
     @Autowired
     ApplicationRepository applicationRepository;
 
+    @Autowired
+    ResumeService resumeService;
 
+    @Transactional
     public void applyToJob(ApplyToJobRequest request) {
         var candidate = getCurrentCandidate();
 
@@ -46,7 +50,11 @@ public class ApplicationService {
             new HashSet<>(request.candidateSkills())
         );
 
-        applicationRepository.save(jobApplication);
+        jobApplication = applicationRepository.save(jobApplication);
+
+        if (!candidate.getResumeUrl().isBlank()) {
+            resumeService.cloneCurrentResumeToApplication(jobApplication, candidate.getResumeUrl());
+        }
     }
 
     private Candidate getCurrentCandidate() {
