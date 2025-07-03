@@ -8,24 +8,23 @@ import vagabounds.enums.JobType;
 import java.time.LocalDateTime;
 import java.util.List;
 
-
 public record CreateJobRequest(
-        @NotBlank
-        String title,
+    @NotBlank
+    String title,
 
-        @NotBlank
-        String description,
+    @NotBlank
+    String description,
 
-        @NotNull
-        JobType jobType,
+    @NotNull
+    JobType jobType,
 
-        @NotNull
-        JobModality jobModality,
+    @NotNull
+    JobModality jobModality,
 
-        List<String> requirements,
-        List<String> desiredSkills,
+    List<String> requirements,
+    List<String> desiredSkills,
 
-        @NotNull
-        LocalDateTime expiresAt
+    @NotNull
+    LocalDateTime expiresAt
 ) {
 }

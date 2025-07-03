@@ -3,6 +3,7 @@ package vagabounds.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import vagabounds.dtos.job.CreateJobRequest;
+import vagabounds.dtos.job.ExtendsExpiresAtRequest;
 import vagabounds.dtos.job.UpdateJobRequest;
 import vagabounds.models.Company;
 import vagabounds.models.Job;
@@ -10,7 +11,6 @@ import vagabounds.repositories.CompanyRepository;
 import vagabounds.repositories.JobRepository;
 import vagabounds.security.SecurityUtils;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -25,14 +25,14 @@ public class JobService {
         var company = getCurrentCompany();
 
         var job = new Job(
-                company,
-                request.title(),
-                request.description(),
-                request.jobType(),
-                request.jobModality(),
-                request.requirements(),
-                request.desiredSkills(),
-                request.expiresAt()
+            company,
+            request.title(),
+            request.description(),
+            request.jobType(),
+            request.jobModality(),
+            request.requirements(),
+            request.desiredSkills(),
+            request.expiresAt()
         );
 
         jobRepository.save(job);
@@ -51,13 +51,13 @@ public class JobService {
             throw new RuntimeException("This job is closed and no longer allows information updates.");
         }
 
-        job.Update(
-                request.title(),
-                request.description(),
-                request.jobType(),
-                request.jobModality(),
-                request.requirements(),
-                request.desiredSkills()
+        job.update(
+            request.title(),
+            request.description(),
+            request.jobType(),
+            request.jobModality(),
+            request.requirements(),
+            request.desiredSkills()
         );
 
         jobRepository.save(job);
@@ -95,22 +95,29 @@ public class JobService {
         return jobs.stream().filter(j -> !j.getIsDeleted()).toList();
     }
 
-    public void extendExpiresAt(Long id, LocalDateTime newExpiresAt) {
-        var job = findById(id);
+    public void extendExpiresAt(ExtendsExpiresAtRequest request) {
+        var job = findById(request.jobId());
+
         var company = getCurrentCompany();
 
         if (!job.getCompany().getId().equals(company.getId())) {
             throw new RuntimeException("You don't have permission to edit job informations, this job is not belongs to your company");
         }
 
-        job.extendExpiresAt(newExpiresAt);
+        job.extendExpiresAt(request.newExpiresAt());
+
         jobRepository.save(job);
     }
 
     private Company getCurrentCompany() {
         var accountId = SecurityUtils.getAccountId();
 
-        return companyRepository.findByAccountId(accountId)
-                .orElseThrow(() -> new RuntimeException("Company not found."));
+        var company = companyRepository.findByAccountId(accountId).orElse(null);
+
+        if (company == null || company.getIsDeleted()) {
+            throw new RuntimeException("Company not found.");
+        }
+
+        return company;
     }
 }

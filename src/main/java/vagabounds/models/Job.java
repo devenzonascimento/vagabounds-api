@@ -65,14 +65,14 @@ public class Job {
     private Company company;
 
     public Job(
-            Company company,
-            String title,
-            String description,
-            JobType jobType,
-            JobModality jobModality,
-            List<String> requirements,
-            List<String> desiredSkills,
-            LocalDateTime expiresAt
+        Company company,
+        String title,
+        String description,
+        JobType jobType,
+        JobModality jobModality,
+        List<String> requirements,
+        List<String> desiredSkills,
+        LocalDateTime expiresAt
     ) {
         this.company = company;
         this.title = title;
@@ -88,13 +88,13 @@ public class Job {
         this.expiresAt = expiresAt;
     }
 
-    public void Update(
-            String title,
-            String description,
-            JobType jobType,
-            JobModality jobModality,
-            List<String> requirements,
-            List<String> desiredSkills
+    public void update(
+        String title,
+        String description,
+        JobType jobType,
+        JobModality jobModality,
+        List<String> requirements,
+        List<String> desiredSkills
     ) {
         if (title != null) {
             setTitle(title);
@@ -122,14 +122,16 @@ public class Job {
     }
 
     public void extendExpiresAt(
-            LocalDateTime newExpiresAt
+        LocalDateTime newExpiresAt
     ) {
-        if (!isOpen && closedAt != null) {
+        if (!isOpen || closedAt != null) {
             throw new RuntimeException("The job is already closed.");
         }
 
         if (newExpiresAt == null || newExpiresAt.isBefore(expiresAt) || newExpiresAt.isEqual(expiresAt)) {
             throw new RuntimeException("Invalid date to extends the deadline.");
         }
+
+        setExpiresAt(newExpiresAt);
     }
 }
