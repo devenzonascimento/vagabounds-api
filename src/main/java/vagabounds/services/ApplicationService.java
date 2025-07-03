@@ -23,6 +23,9 @@ public class ApplicationService {
     @Autowired
     ApplicationRepository applicationRepository;
 
+    @Autowired
+    EmailService emailService;
+
 
     public void applyToJob(ApplyToJobRequest request) {
         var candidate = getCurrentCandidate();
@@ -47,6 +50,7 @@ public class ApplicationService {
         );
 
         applicationRepository.save(jobApplication);
+        emailService.sendEmailToConfirmApplication();
     }
 
     private Candidate getCurrentCandidate() {

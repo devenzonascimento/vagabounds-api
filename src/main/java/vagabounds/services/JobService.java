@@ -125,6 +125,6 @@ public class JobService {
 
         applicationService.deleteApplication(job.getId(), candidate.getId());
 
-        //todo: criar o servido de email para o candidato que foi rejeitado
+        //todo: criar o serviço no EmailService para o candidato que foi rejeitado
     }
 }
