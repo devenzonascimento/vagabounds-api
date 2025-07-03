@@ -5,9 +5,6 @@ import org.springframework.stereotype.Service;
 import vagabounds.dtos.job.CreateJobRequest;
 import vagabounds.dtos.job.ExtendsExpiresAtRequest;
 import vagabounds.dtos.job.UpdateJobRequest;
-import vagabounds.dtos.job.RejectCandidateRequest;
-import vagabounds.models.Application;
-import vagabounds.models.Candidate;
 import vagabounds.models.Company;
 import vagabounds.models.Job;
 import vagabounds.repositories.CompanyRepository;
@@ -23,12 +20,6 @@ public class JobService {
 
     @Autowired
     CompanyRepository companyRepository;
-
-    @Autowired
-    CandidateService candidateService;
-
-    @Autowired
-    ApplicationService applicationService;
 
     public void createJob(CreateJobRequest request) {
         var company = getCurrentCompany();
@@ -128,23 +119,5 @@ public class JobService {
         }
 
         return company;
-    }
-
-    public void rejectCandidate(RejectCandidateRequest request) {
-        Job job = this.findById(request.jobId());
-
-        if (!job.getCompany().getId().equals(this.getCurrentCompany().getId())) {
-            throw new RuntimeException("You can only reject your own candidates.");
-        }
-
-        Candidate candidate = candidateService.findById(request.candidateId());
-
-        if (candidate == null || candidate.getIsDeleted()) {
-            throw new RuntimeException("Candidate not found.");
-        }
-
-        applicationService.deleteApplication(job.getId(), candidate.getId());
-
-        //todo: criar o serviço no EmailService para o candidato que foi rejeitado
     }
 }

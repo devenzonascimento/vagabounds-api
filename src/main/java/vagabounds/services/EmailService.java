@@ -8,9 +8,6 @@ import org.springframework.stereotype.Service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import java.text.NumberFormat;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 
 @Service
 public class EmailService {
@@ -23,6 +20,22 @@ public class EmailService {
 
     @Value("${app.name:Vagabounds}")
     private String appName;
+
+    public void sendAppliedEmail() {
+        // TODO: Implementar
+    }
+
+    public void sendApprovedEmail() {
+        // TODO: Implementar
+    }
+
+    public void sendRejectedEmail() {
+        // TODO: Implementar
+    }
+
+    public void sendAutoRejectedEmail() {
+        // TODO: Implementar
+    }
 
     public void sendEmailToConfirmApplication() {
 
