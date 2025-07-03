@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vagabounds.dtos.job.CreateJobRequest;
+import vagabounds.dtos.job.ExtendsExpiresAtRequest;
 import vagabounds.dtos.job.JobDTO;
 import vagabounds.dtos.job.UpdateJobRequest;
 import vagabounds.services.JobService;
@@ -57,5 +58,13 @@ public class JobController {
         var jobs = jobService.findAllJobsByCompany();
 
         return ResponseEntity.ok(JobDTO.fromJobs(jobs));
+    }
+
+    @PutMapping("/extend")
+    @PreAuthorize("hasRole('COMPANY')")
+    public ResponseEntity<JobDTO> extendsExpiresAt(@RequestBody @Valid ExtendsExpiresAtRequest request) {
+        jobService.extendExpiresAt(request);
+
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }
