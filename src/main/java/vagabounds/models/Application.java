@@ -70,7 +70,7 @@ public class Application {
                     throw new RuntimeException("Sorry, you must be a student to apply.");
                 }
 
-                if (!candidate.getCourse().isBlank()) {
+                if (candidate.getCourse().isBlank()) {
                     throw new RuntimeException("It is required to inform the course name.");
                 }
 
@@ -83,7 +83,7 @@ public class Application {
                     throw new RuntimeException("Sorry, you must have a graduate to apply.");
                 }
 
-                if (!candidate.getCourse().isBlank()) {
+                if (candidate.getCourse().isBlank()) {
                     throw new RuntimeException("It is required to inform the course name.");
                 }
 

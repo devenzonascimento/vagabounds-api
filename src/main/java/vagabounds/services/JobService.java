@@ -3,6 +3,7 @@ package vagabounds.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import vagabounds.dtos.job.CreateJobRequest;
+import vagabounds.dtos.job.ExtendsExpiresAtRequest;
 import vagabounds.dtos.job.UpdateJobRequest;
 import vagabounds.dtos.job.RejectCandidateRequest;
 import vagabounds.models.Application;
@@ -58,8 +59,8 @@ public class JobService {
         if (!job.getIsOpen() && job.getClosedAt() != null) {
             throw new RuntimeException("This job is closed and no longer allows information updates.");
         }
-        
-        job.Update(
+
+        job.update(
             request.title(),
             request.description(),
             request.jobType(),
@@ -103,11 +104,30 @@ public class JobService {
         return jobs.stream().filter(j -> !j.getIsDeleted()).toList();
     }
 
+    public void extendExpiresAt(ExtendsExpiresAtRequest request) {
+        var job = findById(request.jobId());
+
+        var company = getCurrentCompany();
+
+        if (!job.getCompany().getId().equals(company.getId())) {
+            throw new RuntimeException("You don't have permission to edit job informations, this job is not belongs to your company");
+        }
+
+        job.extendExpiresAt(request.newExpiresAt());
+
+        jobRepository.save(job);
+    }
+
     private Company getCurrentCompany() {
         var accountId = SecurityUtils.getAccountId();
 
-        return companyRepository.findByAccountId(accountId)
-            .orElseThrow(() -> new RuntimeException("Company not found."));
+        var company = companyRepository.findByAccountId(accountId).orElse(null);
+
+        if (company == null || company.getIsDeleted()) {
+            throw new RuntimeException("Company not found.");
+        }
+
+        return company;
     }
 
     public void rejectCandidate(RejectCandidateRequest request) {

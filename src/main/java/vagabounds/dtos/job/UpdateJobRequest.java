@@ -1,12 +1,13 @@
 package vagabounds.dtos.job;
 
+import jakarta.validation.constraints.NotNull;
 import vagabounds.enums.JobModality;
 import vagabounds.enums.JobType;
 
 import java.util.List;
 
-// TODO: Colocar as validações necessárias
-public record UpdateJobRequest (
+public record UpdateJobRequest(
+    @NotNull
     Long jobId,
     String title,
     String description,
