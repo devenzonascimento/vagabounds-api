@@ -51,13 +51,24 @@ public class ApplicationService {
             new HashSet<>(request.candidateSkills())
         );
 
-        jobApplication = applicationRepository.save(jobApplication);
+        applicationRepository.save(jobApplication);
 
-        if (jobApplication.getStatus().equals(ApplicationStatus.APPLIED)) {
-            emailService.sendAppliedEmail();
-        } else {
-            emailService.sendAutoRejectedEmail();
+        if (jobApplication.getStatus().equals(ApplicationStatus.AUTO_REJECTED)) {
+            emailService.sendAutoRejectedEmail(
+                candidate.getEmail(),
+                candidate.getName(),
+                job.getTitle(),
+                jobApplication.getDecisionReason()
+            );
+
+            return;
         }
+
+        emailService.sendAppliedEmail(
+            candidate.getEmail(),
+            candidate.getName(),
+            job.getTitle()
+        );
     }
 
     public void approveCandidate(ApproveCandidateRequest request) {
@@ -67,7 +78,11 @@ public class ApplicationService {
 
         applicationRepository.save(jobApplication);
 
-        emailService.sendApprovedEmail();
+        emailService.sendApprovedEmail(
+            jobApplication.getCandidate().getEmail(),
+            jobApplication.getCandidate().getName(),
+            jobApplication.getJob().getTitle()
+        );;
     }
 
     public void rejectCandidate(RejectCandidateRequest request) {
@@ -77,7 +92,12 @@ public class ApplicationService {
 
         applicationRepository.save(jobApplication);
 
-        emailService.sendRejectedEmail();
+        emailService.sendRejectedEmail(
+            jobApplication.getCandidate().getEmail(),
+            jobApplication.getCandidate().getName(),
+            jobApplication.getJob().getTitle(),
+            jobApplication.getDecisionReason()
+        );
     }
 
     public Application findById(Long applicationId) {
