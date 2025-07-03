@@ -134,4 +134,9 @@ public class Job {
 
         setExpiresAt(newExpiresAt);
     }
+
+    public void closeManually() {
+        this.closedAt = LocalDateTime.now();
+        this.isOpen = false;
+    }
 }

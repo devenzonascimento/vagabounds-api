@@ -109,6 +109,20 @@ public class JobService {
         jobRepository.save(job);
     }
 
+    public void closeManually(Long jobId) {
+        var job = findById(jobId);
+
+        var company = getCurrentCompany();
+
+        if (!job.getCompany().getId().equals(company.getId())) {
+            throw new RuntimeException("You don't have permission to edit job informations, this job is not belongs to your company");
+        }
+
+        job.closeManually();
+
+        jobRepository.save(job);
+    }
+
     private Company getCurrentCompany() {
         var accountId = SecurityUtils.getAccountId();
 

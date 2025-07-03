@@ -60,10 +60,18 @@ public class JobController {
         return ResponseEntity.ok(JobDTO.fromJobs(jobs));
     }
 
-    @PutMapping("/extend")
+    @PostMapping("/extend")
     @PreAuthorize("hasRole('COMPANY')")
     public ResponseEntity<JobDTO> extendsExpiresAt(@RequestBody @Valid ExtendsExpiresAtRequest request) {
         jobService.extendExpiresAt(request);
+
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @PostMapping("/close/{jobId}")
+    @PreAuthorize("hasRole('COMPANY')")
+    public ResponseEntity<JobDTO> closeManually(@PathVariable Long jobId) {
+        jobService.closeManually(jobId);
 
         return ResponseEntity.status(HttpStatus.OK).build();
     }
