@@ -4,21 +4,14 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import vagabounds.models.Application;
-import vagabounds.models.Candidate;
 import vagabounds.repositories.ApplicationRepository;
 import vagabounds.repositories.CandidateRepository;
 import vagabounds.repositories.StorageRepository;
-import vagabounds.security.SecurityUtils;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.UUID;
 
 @Service
 public class ResumeService {
@@ -32,7 +25,13 @@ public class ResumeService {
     @Autowired
     ApplicationRepository applicationRepository;
 
-    public String storeCandidateResume(Candidate candidate, MultipartFile file) {
+    public String storeCandidateResume(Long accountId, MultipartFile file) {
+        var candidate = candidateRepository.findByAccountId(accountId).orElse(null);
+
+        if (candidate == null || candidate.getIsDeleted()) {
+            throw new RuntimeException("Candidate not found!");
+        }
+
         var key = generateKey(candidate.getId(), candidate.getName(), file.getOriginalFilename());
 
         try {
@@ -48,12 +47,18 @@ public class ResumeService {
         return key;
     }
 
-    public String loadCandidateResume(Candidate candidate) {
+    public String loadCandidateResume(Long accountId) {
+        var candidate = candidateRepository.findByAccountId(accountId).orElse(null);
+
+        if (candidate == null || candidate.getIsDeleted()) {
+            throw new RuntimeException("Candidate not found!");
+        }
+
         return storageRepository.generatePresignedUrl(candidate.getResumeUrl(), 15 * 60);
     }
 
     @Transactional
-    public void cloneCurrentResumeToApplication(Application application, String originalResumePath) {
+    public void cloneCurrentCandidateResumeToApplication(Application application, String originalResumePath) {
         // Extrai o filename da key original
         String filename = originalResumePath.substring(originalResumePath.lastIndexOf('/') + 1);
 

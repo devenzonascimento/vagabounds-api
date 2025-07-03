@@ -7,16 +7,24 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import vagabounds.dtos.candidate.CandidateDTO;
 import vagabounds.dtos.candidate.UpdateCandidateRequest;
 import vagabounds.dtos.generic.PageResult;
+import vagabounds.security.SecurityUtils;
 import vagabounds.services.CandidateService;
+import vagabounds.services.ResumeService;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/candidate")
 public class CandidateController {
     @Autowired
     CandidateService candidateService;
+
+    @Autowired
+    ResumeService resumeService;
 
     @GetMapping
     public ResponseEntity<PageResult<CandidateDTO>> findAll(
@@ -38,6 +46,34 @@ public class CandidateController {
         var candidate = candidateService.findById(candidateId);
 
         return ResponseEntity.ok(CandidateDTO.fromCandidate(candidate));
+    }
+
+    @GetMapping("/resume-url")
+    @PreAuthorize("hasRole('CANDIDATE')")
+    public ResponseEntity<Map<String, String>> getResumeUrl() {
+        var accountId = SecurityUtils.getAccountId();
+
+        var resumeUrl = resumeService.loadCandidateResume(accountId);
+
+        return ResponseEntity.ok(Map.of("resumeUrl", resumeUrl));
+    }
+
+    @PostMapping("/upload-resume")
+    @PreAuthorize("hasRole('CANDIDATE')")
+    public ResponseEntity<Map<String, String>> uploadResume(
+        @RequestParam("file") MultipartFile file
+    ) {
+        if (file.isEmpty()) {
+            return ResponseEntity
+                .badRequest()
+                .body(Map.of("error", "File is empty"));
+        }
+
+        var accountId = SecurityUtils.getAccountId();
+
+        resumeService.storeCandidateResume(accountId, file);
+
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PutMapping

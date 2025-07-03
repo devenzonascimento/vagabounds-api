@@ -53,7 +53,7 @@ public class ApplicationService {
         jobApplication = applicationRepository.save(jobApplication);
 
         if (!candidate.getResumeUrl().isBlank()) {
-            resumeService.cloneCurrentResumeToApplication(jobApplication, candidate.getResumeUrl());
+            resumeService.cloneCurrentCandidateResumeToApplication(jobApplication, candidate.getResumeUrl());
         }
     }
 
