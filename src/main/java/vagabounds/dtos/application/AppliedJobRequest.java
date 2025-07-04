@@ -5,9 +5,5 @@ import jakarta.validation.constraints.NotNull;
 
 public record AppliedJobRequest(
     @NotNull
-    Long jobId,
-    @NotBlank
-    String title,
-    @NotNull
     Long candidateId
 ) { }

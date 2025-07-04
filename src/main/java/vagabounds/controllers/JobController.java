@@ -7,10 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vagabounds.dtos.application.AppliedJobRequest;
-import vagabounds.dtos.job.CreateJobRequest;
-import vagabounds.dtos.job.ExtendsExpiresAtRequest;
-import vagabounds.dtos.job.JobDTO;
-import vagabounds.dtos.job.UpdateJobRequest;
+import vagabounds.dtos.job.*;
 import vagabounds.services.JobService;
 
 import java.util.List;
@@ -61,14 +58,13 @@ public class JobController {
         return ResponseEntity.ok(JobDTO.fromJobs(jobs));
     }
 
-    @GetMapping("/find-all-applied-jobs/{jobId}/{candidateId}")
+    @GetMapping("/find-all-applied-jobs/{candidateId}")
     @PreAuthorize("hasRole('COMPANY')")
-    public ResponseEntity<List<AppliedJobRequest>> findAllAppliedJobs(
-        @PathVariable Long jobId,
+    public ResponseEntity<List<AppliedJobList>> findAllAppliedJobs(
         @PathVariable Long candidateId
     ) {
-        AppliedJobRequest request = new AppliedJobRequest(jobId, candidateId);
-        List<AppliedJobRequest> appliedJobs = jobService.findAllAppliedJobs(request);
+        AppliedJobRequest request = new AppliedJobRequest(candidateId);
+        List<AppliedJobList> appliedJobs = jobService.findAllAppliedJobs(request);
 
         return ResponseEntity.ok(appliedJobs);
     }
