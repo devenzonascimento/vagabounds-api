@@ -3,6 +3,7 @@ package vagabounds.services;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import vagabounds.dtos.application.ApplyToJobRequest;
 import vagabounds.dtos.application.ApproveCandidateRequest;
 import vagabounds.dtos.application.RejectCandidateRequest;
@@ -12,8 +13,12 @@ import vagabounds.models.Candidate;
 import vagabounds.repositories.ApplicationRepository;
 import vagabounds.repositories.CandidateRepository;
 import vagabounds.repositories.JobRepository;
+import vagabounds.repositories.StorageRepository;
 import vagabounds.security.SecurityUtils;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 
 @Service
@@ -29,6 +34,9 @@ public class ApplicationService {
 
     @Autowired
     ResumeService resumeService;
+
+    @Autowired
+    StorageRepository storageRepository;
 
     @Autowired
     EmailService emailService;
@@ -82,6 +90,62 @@ public class ApplicationService {
         );
     }
 
+    @Transactional
+    public void applyWithResume(Long jobId, MultipartFile file) {
+        var candidate = getCurrentCandidate();
+
+        var job = jobRepository.findById(jobId).orElse(null);
+
+        if (job == null || job.getIsDeleted()) {
+            throw new RuntimeException("Job not found.");
+        }
+
+        var applicationFound = applicationRepository.findByJobIdAndCandidateId(job.getId(), candidate.getId()).orElse(null);
+
+        if (applicationFound != null) {
+            throw new RuntimeException("You already applied to this job.");
+        }
+
+        var jobApplication = new Application(job, candidate);
+
+        jobApplication = applicationRepository.save(jobApplication);
+
+        var fileName = StorageRepository.buildResumeFileName(candidate.getName(), file.getOriginalFilename());
+
+        String key = String.format(
+            "application/%d/%s",
+            jobApplication.getId(),
+            fileName
+        );
+
+        try {
+            storageRepository.store(file, key);
+        } catch (IOException e) {
+            throw new RuntimeException("Failure to upload resume to storage. Error: " + e.getMessage());
+        }
+
+        candidate.setResumeUrl(key);
+
+        candidateRepository.save(candidate);
+
+        if (jobApplication.getStatus().equals(ApplicationStatus.AUTO_REJECTED)) {
+            emailService.sendAutoRejectedEmail(
+                candidate.getEmail(),
+                candidate.getName(),
+                job.getTitle(),
+                jobApplication.getDecisionReason()
+            );
+
+            return;
+        }
+
+        emailService.sendAppliedEmail(
+            candidate.getEmail(),
+            candidate.getName(),
+            job.getTitle()
+        );
+    }
+
     public void approveCandidate(ApproveCandidateRequest request) {
         var jobApplication = findById(request.applicationId());
 
@@ -93,7 +157,8 @@ public class ApplicationService {
             jobApplication.getCandidate().getEmail(),
             jobApplication.getCandidate().getName(),
             jobApplication.getJob().getTitle()
-        );;
+        );
+        ;
     }
 
     public void rejectCandidate(RejectCandidateRequest request) {
