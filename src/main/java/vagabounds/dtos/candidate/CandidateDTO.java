@@ -4,6 +4,7 @@ import vagabounds.enums.CandidateEducation;
 import vagabounds.models.Candidate;
 
 public record CandidateDTO(
+    Long id,
     String name,
     String email,
     String address,
@@ -15,6 +16,7 @@ public record CandidateDTO(
 ) {
     public static CandidateDTO fromCandidate(Candidate candidate) {
         return new CandidateDTO(
+            candidate.getId(),
             candidate.getName(),
             candidate.getAccount().getEmail(),
             candidate.getAddress(),

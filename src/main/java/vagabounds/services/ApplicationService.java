@@ -3,12 +3,16 @@ package vagabounds.services;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import vagabounds.dtos.application.AppliedJobRequest;
 import vagabounds.dtos.application.ApplyToJobRequest;
 import vagabounds.dtos.application.ApproveCandidateRequest;
 import vagabounds.dtos.application.RejectCandidateRequest;
+import vagabounds.dtos.candidate.CandidateDTO;
+import vagabounds.dtos.job.JobDTO;
 import vagabounds.enums.ApplicationStatus;
 import vagabounds.models.Application;
 import vagabounds.models.Candidate;
+import vagabounds.models.Job;
 import vagabounds.repositories.ApplicationRepository;
 import vagabounds.repositories.CandidateRepository;
 import vagabounds.repositories.JobRepository;
@@ -93,7 +97,7 @@ public class ApplicationService {
             jobApplication.getCandidate().getEmail(),
             jobApplication.getCandidate().getName(),
             jobApplication.getJob().getTitle()
-        );;
+        );
     }
 
     public void rejectCandidate(RejectCandidateRequest request) {

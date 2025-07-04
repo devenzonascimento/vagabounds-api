@@ -2,11 +2,15 @@ package vagabounds.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import vagabounds.dtos.application.AppliedJobRequest;
 import vagabounds.dtos.job.CreateJobRequest;
 import vagabounds.dtos.job.ExtendsExpiresAtRequest;
 import vagabounds.dtos.job.UpdateJobRequest;
+import vagabounds.enums.ApplicationStatus;
+import vagabounds.models.Application;
 import vagabounds.models.Company;
 import vagabounds.models.Job;
+import vagabounds.repositories.ApplicationRepository;
 import vagabounds.repositories.CompanyRepository;
 import vagabounds.repositories.JobRepository;
 import vagabounds.security.SecurityUtils;
@@ -20,6 +24,12 @@ public class JobService {
 
     @Autowired
     CompanyRepository companyRepository;
+
+    @Autowired
+    ApplicationService applicationService;
+
+    @Autowired
+    ApplicationRepository applicationRepository;
 
     public void createJob(CreateJobRequest request) {
         var company = getCurrentCompany();
@@ -133,5 +143,18 @@ public class JobService {
         }
 
         return company;
+    }
+
+    public List<AppliedJobRequest> findAllAppliedJobs(AppliedJobRequest request) {
+
+        return applicationRepository.findAll().stream()
+            .filter(app -> app.getStatus() == ApplicationStatus.APPLIED &&
+                app.getCandidate().getId().equals(request.candidateId()))
+            .map(app -> new AppliedJobRequest(
+                app.getJob().getId(),
+                app.getJob().getTitle(),
+                app.getCandidate().getId()
+            ))
+            .toList();
     }
 }
