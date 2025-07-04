@@ -8,7 +8,6 @@ import vagabounds.models.Company;
 import vagabounds.repositories.CompanyRepository;
 import vagabounds.security.SecurityUtils;
 
-import java.time.LocalDateTime;
 
 @Service
 public class CompanyService {
@@ -61,14 +60,6 @@ public class CompanyService {
         if (hasActiveJobs) {
             throw new RuntimeException("Cannot delete company with active jobs. Please close all jobs first.");
         }
-
-        company.getJobs().forEach(job -> {
-            if (!job.getIsDeleted()) {
-                job.setIsDeleted(true);
-                job.setClosedAt(LocalDateTime.now());
-                job.setIsOpen(false);
-            }
-        });
 
         company.setIsDeleted(true);
 
