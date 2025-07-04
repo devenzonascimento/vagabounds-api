@@ -59,7 +59,7 @@ public class JobController {
     }
 
     @GetMapping("/find-all-applied-jobs/{candidateId}")
-    @PreAuthorize("hasRole('COMPANY')")
+    @PreAuthorize("hasRole('CANDIDATE')")
     public ResponseEntity<List<AppliedJobList>> findAllAppliedJobs(
         @PathVariable Long candidateId
     ) {
