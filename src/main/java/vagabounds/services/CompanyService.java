@@ -2,10 +2,13 @@ package vagabounds.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import vagabounds.dtos.company.UpdateCompanyRequest;
 import vagabounds.models.Company;
 import vagabounds.repositories.CompanyRepository;
 import vagabounds.security.SecurityUtils;
+
+import java.time.LocalDateTime;
 
 @Service
 public class CompanyService {
@@ -48,6 +51,7 @@ public class CompanyService {
         return getCurrentCompany();
     }
 
+    @Transactional
     public void deleteCompany() {
         var company = getCurrentCompany();
 
@@ -58,7 +62,16 @@ public class CompanyService {
             throw new RuntimeException("Cannot delete company with active jobs. Please close all jobs first.");
         }
 
+        company.getJobs().forEach(job -> {
+            if (!job.getIsDeleted()) {
+                job.setIsDeleted(true);
+                job.setClosedAt(LocalDateTime.now());
+                job.setIsOpen(false);
+            }
+        });
+
         company.setIsDeleted(true);
+
         companyRepository.save(company);
     }
 
