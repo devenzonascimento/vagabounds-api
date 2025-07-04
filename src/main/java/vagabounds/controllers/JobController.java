@@ -2,14 +2,13 @@ package vagabounds.controllers;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import vagabounds.dtos.job.CreateJobRequest;
-import vagabounds.dtos.job.ExtendsExpiresAtRequest;
-import vagabounds.dtos.job.JobDTO;
-import vagabounds.dtos.job.UpdateJobRequest;
+import vagabounds.dtos.generic.PageResult;
+import vagabounds.dtos.job.*;
 import vagabounds.services.JobService;
 
 import java.util.List;
@@ -38,10 +37,12 @@ public class JobController {
 
     @GetMapping
     @PreAuthorize("hasRole('COMPANY')")
-    public ResponseEntity<List<JobDTO>> findAll() {
-        var jobs = jobService.findAll();
+    public ResponseEntity<PageResult<JobDTO>> list(JobFilterRequest filter) {
+        var jobsPage = jobService.listJobsWithFilter(filter);
 
-        return ResponseEntity.ok(JobDTO.fromJobs(jobs));
+        Page<JobDTO> dtoPage = jobsPage.map(JobDTO::fromJob);
+
+        return ResponseEntity.ok(PageResult.fromRawPage(dtoPage));
     }
 
     @GetMapping("/{jobId}")
