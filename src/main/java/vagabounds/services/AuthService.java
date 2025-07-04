@@ -9,9 +9,12 @@ import vagabounds.dtos.auth.RegisterCompanyRequest;
 import vagabounds.models.Account;
 import vagabounds.models.Candidate;
 import vagabounds.models.Company;
+import vagabounds.models.Group;
+import vagabounds.enums.GroupPermission;
 import vagabounds.repositories.AccountRepository;
 import vagabounds.repositories.CandidateRepository;
 import vagabounds.repositories.CompanyRepository;
+import vagabounds.repositories.GroupRepository;
 import vagabounds.security.Role;
 
 import java.util.HashSet;
@@ -27,6 +30,9 @@ public class AuthService {
 
     @Autowired
     CandidateRepository candidateRepository;
+
+    @Autowired
+    GroupRepository groupRepository;
 
     @Autowired
     PasswordEncoder encoder;
@@ -52,6 +58,24 @@ public class AuthService {
 
         Account account = createAccount(request.email(), request.password(), Role.ROLE_COMPANY);
         company.setAccount(account);
+
+        if (request.groupId() == null) {
+            Group group = new Group();
+            group.setName(request.name() + " Group");
+            group = groupRepository.save(group);
+
+            company.setGroup(group);
+            company.setPermission(GroupPermission.OWNER);
+        } else {
+
+            var group = groupRepository.findById(request.groupId()).orElse(null);
+            if (group == null) {
+                throw new RuntimeException("Group not found.");
+            }
+
+            company.setGroup(group);
+            company.setPermission(GroupPermission.MEMBER);
+        }
 
         companyRepository.save(company);
     }

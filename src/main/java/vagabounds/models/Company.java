@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import vagabounds.enums.GroupPermission;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -36,9 +37,14 @@ public class Company {
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 
-    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Job> jobs = new HashSet<>();
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id")
+    private Group group;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "permission", nullable = false)
+    private GroupPermission permission = GroupPermission.MEMBER;
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<GroupMembership> memberships = new HashSet<>();
+    private Set<Job> jobs = new HashSet<>();
 }

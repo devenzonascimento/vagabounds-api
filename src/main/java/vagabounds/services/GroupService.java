@@ -1,18 +1,16 @@
 package vagabounds.services;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import vagabounds.dtos.group.AddMemberRequest;
+import vagabounds.dtos.auth.RegisterCompanyRequest;
+import vagabounds.dtos.group.ChangePermissionRequest;
 import vagabounds.dtos.group.RemoveMemberRequest;
+import vagabounds.enums.GroupPermission;
 import vagabounds.models.Group;
 import vagabounds.models.Company;
-import vagabounds.models.GroupMembership;
-import vagabounds.models.GroupMembershipId;
-import vagabounds.repositories.GroupRepository;
 import vagabounds.repositories.CompanyRepository;
-import vagabounds.repositories.GroupMembershipRepository;
 import vagabounds.security.SecurityUtils;
-import vagabounds.utils.Utils;
 
 import java.util.List;
 
@@ -22,120 +20,122 @@ public class GroupService {
     CompanyRepository companyRepository;
 
     @Autowired
-    GroupRepository groupRepository;
-
-    @Autowired
-    GroupMembershipRepository membershipRepository;
-
-    public void createGroup(String groupName) {
-        var company = getCurrentCompany();
-
-        Group group = new Group();
-        group.setName(groupName);
-        group = groupRepository.save(group);
-
-        GroupMembership membership = new GroupMembership(
-            new GroupMembershipId(company.getId(), group.getId()),
-            company,
-            group,
-            true
-        );
-
-        membershipRepository.save(membership);
-    }
-
-    public void addMember(AddMemberRequest request) {
-        var company = getCurrentCompany();
-
-        var group = groupRepository.findById(request.groupId()).orElse(null);
-
-        if (group == null) {
-            throw new RuntimeException("Group not found.");
-        }
-
-        var isAdminOnThisGroup = group.getMemberships()
-            .stream()
-            .anyMatch(m -> m.getIsAdmin() && m.getCompany().equals(company));
-
-        if (!isAdminOnThisGroup) {
-            throw new RuntimeException("You don't have admin access to add members on group.");
-        }
-
-        var alreadyGroupMember = group.getMemberships()
-            .stream()
-            .anyMatch(m -> m.getCompany().getId().equals(request.newMemberId()));
-
-        if (alreadyGroupMember) {
-            throw new RuntimeException("The new member informed is already part of the group.");
-        }
-
-        var memberToAdd = companyRepository.findById(request.newMemberId()).orElse(null);
-
-        if (memberToAdd == null) {
-            throw new RuntimeException("The informed company to add to group is not found.");
-        }
-
-        GroupMembership membership = new GroupMembership(
-            new GroupMembershipId(memberToAdd.getId(), group.getId()),
-            memberToAdd,
-            group,
-            false
-        );
-
-        membershipRepository.save(membership);
-    }
+    AuthService authService;
 
     public void removeMember(RemoveMemberRequest request) {
         var company = getCurrentCompany();
 
-        var group = groupRepository.findById(request.groupId()).orElse(null);
-
-        if (group == null) {
-            throw new RuntimeException("Group not found.");
+        if (!GroupPermission.OWNER.equals(company.getPermission())) {
+            throw new RuntimeException("Only group owners can remove members.");
         }
 
-        var isAdminOnThisGroup = group.getMemberships()
-            .stream()
-            .anyMatch(m -> m.getIsAdmin() && m.getCompany().equals(company));
+        var memberToRemove = companyRepository.findById(request.memberId()).orElse(null);
 
-        if (!isAdminOnThisGroup) {
-            throw new RuntimeException("You don't have admin access to remove members on group.");
+        if (memberToRemove == null || memberToRemove.getIsDeleted()) {
+            throw new RuntimeException("Member not found.");
         }
 
-        var membership = Utils.find(
-            group.getMemberships(),
-            m -> m.getCompany().getId().equals(request.memberId())
-        );
-
-        if (membership == null) {
-            throw new RuntimeException("The member informed is not part of the group.");
+        if (memberToRemove.getGroup() == null ||
+                !memberToRemove.getGroup().getId().equals(company.getGroup().getId())) {
+            throw new RuntimeException("Member is not part of your group.");
         }
 
-        group.getMemberships().remove(membership);
-        membershipRepository.deleteById(membership.getId());
+        if (memberToRemove.getId().equals(company.getId())) {
+            throw new RuntimeException("Cannot remove yourself from the group.");
+        }
+
+        memberToRemove.setIsDeleted(true);
+
+        companyRepository.save(memberToRemove);
     }
 
-    public List<Group> findAll() {
+    @Transactional
+    public void changePermission(ChangePermissionRequest request) {
         var company = getCurrentCompany();
 
-        return company.getMemberships().stream().map(GroupMembership::getGroup).toList();
+        if (!GroupPermission.OWNER.equals(company.getPermission())){
+            throw new RuntimeException("Only group owners can change permissions.");
+        }
+
+        var targetCompany = companyRepository.findById(request.companyId()).orElse(null);
+
+        if (targetCompany == null || targetCompany.getIsDeleted()){
+            throw new RuntimeException("Company not found.");
+        }
+
+        if (targetCompany.getGroup() == null ||
+            !targetCompany.getGroup().getId().equals(company.getGroup().getId())){
+            throw new RuntimeException("Target company is not part of your group.");
+        }
+
+        if (targetCompany.getId().equals(company.getId()) &&
+                GroupPermission.OWNER.equals(company.getPermission())) {
+            throw new RuntimeException("Cannot change your own OWNER permission.");
+        }
+
+        if (GroupPermission.OWNER.equals(request.permission())) {
+            var hasOtherOwner = company.getGroup().getCompanies()
+                    .stream()
+                    .anyMatch(c -> !c.getId().equals(targetCompany.getId()) &&
+                            GroupPermission.OWNER.equals(c.getPermission()) &&
+                            !c.getIsDeleted());
+
+            if (hasOtherOwner) {
+                throw new RuntimeException("There can only be one OWNER per group.");
+            }
+        }
+
+        targetCompany.setPermission(request.permission());
+        companyRepository.save(targetCompany);
+
+    }
+
+    public List<Company> findAllMembers() {
+        var company = getCurrentCompany();
+
+        if (company.getGroup() == null) {
+            throw new RuntimeException("Company is not associated with any group.");
+        }
+
+        return company.getGroup().getCompanies()
+                .stream()
+                .filter(c -> !c.getIsDeleted())
+                .toList();
     }
 
     public Group findById(Long groupId) {
         var company = getCurrentCompany();
 
-        var groups = company.getMemberships()
-            .stream()
-            .map(GroupMembership::getGroup)
-            .toList();
+        if (company.getGroup() == null || !company.getGroup().getId().equals(groupId)) {
+            throw new RuntimeException("You don't have access to this group.");
+        }
 
-        return Utils.find(groups, g -> g.getId().equals(groupId));
-    }
+        return company.getGroup();
+    } // verificar se vamos utilizar
 
     private Company getCurrentCompany() {
         var accountId = SecurityUtils.getAccountId();
 
         return companyRepository.findByAccountId(accountId)
             .orElseThrow(() -> new RuntimeException("Company not found."));
+    }
+
+    @Transactional
+    public void registerCompany(RegisterCompanyRequest request) {
+        var company = getCurrentCompany();
+
+        if (!GroupPermission.OWNER.equals(company.getPermission())) {
+            throw new RuntimeException("Only group owners can register companies.");
+        }
+
+        RegisterCompanyRequest requestWithGroupId = new RegisterCompanyRequest(
+                request.email(),
+                request.password(),
+                request.name(),
+                request.cnpj(),
+                request.address(),
+                company.getGroup().getId() );
+
+        authService.registerCompany(requestWithGroupId);
     }
 }
