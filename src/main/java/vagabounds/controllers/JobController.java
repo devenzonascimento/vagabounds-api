@@ -47,10 +47,10 @@ public class JobController {
 
     @GetMapping("/{jobId}")
     @PreAuthorize("hasRole('COMPANY')")
-    public ResponseEntity<JobDTO> findById(@PathVariable Long jobId) {
+    public ResponseEntity<JobDetailsReponse> findById(@PathVariable Long jobId) {
         var job = jobService.findById(jobId);
 
-        return ResponseEntity.ok(JobDTO.fromJob(job));
+        return ResponseEntity.ok(JobDetailsReponse.fromJob(job));
     }
 
     @GetMapping("/by-company")
