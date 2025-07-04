@@ -52,8 +52,6 @@ public class Candidate {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    // TODO: COLOCAR O RESTO DOS ATRIBUTOS E RELACIONAMENTOS
-
     /*
      * Construtor para registrar um novo candidato
      * */
@@ -153,5 +151,9 @@ public class Candidate {
         }
 
         return "";
+    }
+
+    public String getEmail() {
+        return this.account.getEmail();
     }
 }

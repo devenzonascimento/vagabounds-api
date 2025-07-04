@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import vagabounds.enums.JobModality;
 import vagabounds.enums.JobType;
+
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -72,8 +73,7 @@ public class Job {
         List<String> requirements,
         List<String> desiredSkills,
         LocalDateTime expiresAt
-    )
-    {
+    ) {
         this.company = company;
         this.title = title;
         this.description = description;
@@ -87,8 +87,8 @@ public class Job {
         this.closedAt = null;
         this.expiresAt = expiresAt;
     }
-    
-    public void Update(
+
+    public void update(
         String title,
         String description,
         JobType jobType,
@@ -119,5 +119,24 @@ public class Job {
         if (desiredSkills != null) {
             setDesiredSkills(new HashSet<>(desiredSkills));
         }
+    }
+
+    public void extendExpiresAt(
+        LocalDateTime newExpiresAt
+    ) {
+        if (!isOpen || closedAt != null) {
+            throw new RuntimeException("The job is already closed.");
+        }
+
+        if (newExpiresAt == null || newExpiresAt.isBefore(expiresAt) || newExpiresAt.isEqual(expiresAt)) {
+            throw new RuntimeException("Invalid date to extends the deadline.");
+        }
+
+        setExpiresAt(newExpiresAt);
+    }
+
+    public void closeManually() {
+        this.closedAt = LocalDateTime.now();
+        this.isOpen = false;
     }
 }
