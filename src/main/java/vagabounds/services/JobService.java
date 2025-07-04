@@ -147,14 +147,18 @@ public class JobService {
     }
 
     public List<AppliedJobList> findAllAppliedJobs(AppliedJobRequest request) {
-
+        
         return applicationRepository.findAll().stream()
-            .filter(app -> app.getStatus() == ApplicationStatus.APPLIED &&
+            .filter(app -> app.getStatus()  != null &&
                 app.getCandidate().getId().equals(request.candidateId()))
             .map(app -> new AppliedJobList(
+                app.getJob().getCompany().getName(),
                 app.getJob().getId(),
                 app.getJob().getTitle(),
-                app.getCandidate().getId()
+                app.getJob().getJobType(),
+                app.getJob().getJobModality(),
+                app.getAppliedAt(),
+                app.getStatus()
             ))
             .toList();
     }
