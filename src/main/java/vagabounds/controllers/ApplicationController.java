@@ -2,26 +2,16 @@ package vagabounds.controllers;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import vagabounds.dtos.application.AppliedJobFilter;
 import vagabounds.dtos.application.ApplyToJobRequest;
 import vagabounds.dtos.application.ApproveCandidateRequest;
 import vagabounds.dtos.application.RejectCandidateRequest;
-import vagabounds.dtos.job.AppliedJobList;
-import vagabounds.enums.ApplicationStatus;
-import vagabounds.enums.JobModality;
-import vagabounds.enums.JobType;
-import vagabounds.security.SecurityUtils;
 import vagabounds.services.ApplicationService;
 import vagabounds.services.JobService;
-
-import java.time.LocalDate;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -29,10 +19,7 @@ import java.util.Map;
 public class ApplicationController {
     @Autowired
     ApplicationService applicationService;
-
-    @Autowired
-    JobService jobService;
-
+    
     @PostMapping("/apply-to")
     @PreAuthorize("hasRole('CANDIDATE')")
     public ResponseEntity<Void> applyTo(@RequestBody @Valid ApplyToJobRequest request) {
