@@ -64,6 +64,9 @@ public class Job {
     @JoinColumn(name = "company_id", nullable = false)
     private Company company;
 
+    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Application> applications = new HashSet<>();
+
     public Job(
         Company company,
         String title,

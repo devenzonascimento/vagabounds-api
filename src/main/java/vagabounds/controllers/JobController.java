@@ -2,14 +2,16 @@ package vagabounds.controllers;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import vagabounds.dtos.application.AppliedJobRequest;
+import vagabounds.dtos.generic.PageResult;
 import vagabounds.dtos.job.*;
 import vagabounds.services.JobService;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -36,18 +38,32 @@ public class JobController {
 
     @GetMapping
     @PreAuthorize("hasRole('COMPANY')")
-    public ResponseEntity<List<JobDTO>> findAll() {
-        var jobs = jobService.findAll();
+    public ResponseEntity<PageResult<JobDTO>> list(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int pageSize,
+        @RequestParam(defaultValue = "createdAt") String sortBy,
+        @RequestParam(defaultValue = "DESC") String direction,
+        @RequestParam(required = false) Boolean isOpen,
+        @RequestParam(required = false) LocalDate createdFrom,
+        @RequestParam(required = false) LocalDate createdTo
+    ) {
+        JobFilterRequest filter = new JobFilterRequest(
+            page, pageSize, sortBy, direction, isOpen, createdFrom, createdTo
+        );
 
-        return ResponseEntity.ok(JobDTO.fromJobs(jobs));
+        var jobsPage = jobService.listJobsWithFilter(filter);
+
+        Page<JobDTO> dtoPage = jobsPage.map(JobDTO::fromJob);
+
+        return ResponseEntity.ok(PageResult.fromRawPage(dtoPage));
     }
 
     @GetMapping("/{jobId}")
     @PreAuthorize("hasRole('COMPANY')")
-    public ResponseEntity<JobDTO> findById(@PathVariable Long jobId) {
+    public ResponseEntity<JobDetailsReponse> findById(@PathVariable Long jobId) {
         var job = jobService.findById(jobId);
 
-        return ResponseEntity.ok(JobDTO.fromJob(job));
+        return ResponseEntity.ok(JobDetailsReponse.fromJob(job));
     }
 
     @GetMapping("/by-company")
@@ -56,17 +72,6 @@ public class JobController {
         var jobs = jobService.findAllJobsByCompany();
 
         return ResponseEntity.ok(JobDTO.fromJobs(jobs));
-    }
-
-    @GetMapping("/find-all-applied-jobs/{candidateId}")
-    @PreAuthorize("hasRole('CANDIDATE')")
-    public ResponseEntity<List<AppliedJobList>> findAllAppliedJobs(
-        @PathVariable Long candidateId
-    ) {
-        AppliedJobRequest request = new AppliedJobRequest(candidateId);
-        List<AppliedJobList> appliedJobs = jobService.findAllAppliedJobs(request);
-
-        return ResponseEntity.ok(appliedJobs);
     }
 
     @PostMapping("/extend")

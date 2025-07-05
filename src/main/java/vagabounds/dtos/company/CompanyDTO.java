@@ -2,6 +2,8 @@ package vagabounds.dtos.company;
 
 import vagabounds.models.Company;
 
+import java.util.List;
+
 public record CompanyDTO(
     Long id,
     String name,
@@ -18,4 +20,11 @@ public record CompanyDTO(
             company.getAddress()
         );
     }
+
+    public static List<CompanyDTO> fromCompanies(List<Company> companies) {
+        return companies.stream()
+                .map(CompanyDTO::fromCompany)
+                .toList();
+    }
+
 }

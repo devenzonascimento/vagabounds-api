@@ -1,11 +1,17 @@
 package vagabounds.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import vagabounds.dtos.application.AppliedJobRequest;
 import vagabounds.dtos.job.AppliedJobList;
 import vagabounds.dtos.job.CreateJobRequest;
 import vagabounds.dtos.job.ExtendsExpiresAtRequest;
+import vagabounds.dtos.job.JobFilterRequest;
 import vagabounds.dtos.job.UpdateJobRequest;
 import vagabounds.enums.ApplicationStatus;
 import vagabounds.models.Application;
@@ -15,6 +21,7 @@ import vagabounds.repositories.ApplicationRepository;
 import vagabounds.repositories.CompanyRepository;
 import vagabounds.repositories.JobRepository;
 import vagabounds.security.SecurityUtils;
+import vagabounds.specifications.JobSpecifications;
 
 import java.util.List;
 
@@ -84,14 +91,18 @@ public class JobService {
         return job;
     }
 
-    public List<Job> findAll() {
-        var jobs = jobRepository.findAll();
+    public Page<Job> listJobsWithFilter(JobFilterRequest filter) {
+        var candidate = getCurrentCompany();
 
-        if (jobs.isEmpty()) {
-            return jobs;
-        }
+        Specification<Job> spec = Specification
+            .where(JobSpecifications.belongsToCompany(candidate.getId()))
+            .and(JobSpecifications.isOpen(filter.isOpen()))
+            .and(JobSpecifications.createdBetween(filter.createdFrom(), filter.createdTo()));
 
-        return jobs.stream().filter(j -> !j.getIsDeleted()).toList();
+        Sort sort = Sort.by(Sort.Direction.fromString(filter.direction()), filter.sortBy());
+        Pageable pageable = PageRequest.of(filter.page(), filter.pageSize(), sort);
+
+        return jobRepository.findAll(spec, pageable);
     }
 
     public List<Job> findAllJobsByCompany() {

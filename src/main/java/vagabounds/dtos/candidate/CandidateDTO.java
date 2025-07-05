@@ -11,8 +11,7 @@ public record CandidateDTO(
     CandidateEducation education,
     String course,
     Integer semester,
-    Integer graduationYear,
-    String resumeURL
+    Integer graduationYear
 ) {
     public static CandidateDTO fromCandidate(Candidate candidate) {
         return new CandidateDTO(
@@ -23,8 +22,7 @@ public record CandidateDTO(
             candidate.getEducation(),
             candidate.getCourse(),
             candidate.getSemester(),
-            candidate.getGraduationYear(),
-            candidate.getResumeUrl()
+            candidate.getGraduationYear()
         );
     }
 }
