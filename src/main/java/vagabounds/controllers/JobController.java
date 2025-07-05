@@ -11,6 +11,7 @@ import vagabounds.dtos.generic.PageResult;
 import vagabounds.dtos.job.*;
 import vagabounds.services.JobService;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -37,7 +38,19 @@ public class JobController {
 
     @GetMapping
     @PreAuthorize("hasRole('COMPANY')")
-    public ResponseEntity<PageResult<JobDTO>> list(JobFilterRequest filter) {
+    public ResponseEntity<PageResult<JobDTO>> list(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int pageSize,
+        @RequestParam(defaultValue = "createdAt") String sortBy,
+        @RequestParam(defaultValue = "DESC") String direction,
+        @RequestParam(required = false) Boolean isOpen,
+        @RequestParam(required = false) LocalDate createdFrom,
+        @RequestParam(required = false) LocalDate createdTo
+    ) {
+        JobFilterRequest filter = new JobFilterRequest(
+            page, pageSize, sortBy, direction, isOpen, createdFrom, createdTo
+        );
+
         var jobsPage = jobService.listJobsWithFilter(filter);
 
         Page<JobDTO> dtoPage = jobsPage.map(JobDTO::fromJob);
@@ -46,10 +59,11 @@ public class JobController {
     }
 
     @GetMapping("/{jobId}")
-    public ResponseEntity<JobDTO> findById(@PathVariable Long jobId) {
+    @PreAuthorize("hasRole('COMPANY')")
+    public ResponseEntity<JobDetailsReponse> findById(@PathVariable Long jobId) {
         var job = jobService.findById(jobId);
 
-        return ResponseEntity.ok(JobDTO.fromJob(job));
+        return ResponseEntity.ok(JobDetailsReponse.fromJob(job));
     }
 
     @GetMapping("/by-company")
