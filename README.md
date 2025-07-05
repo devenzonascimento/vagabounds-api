@@ -1,167 +1,109 @@
-# VagaBounds
+# VagaBounds API — Pitch de Vendas
+
+## 🌟 Visão Geral
+
+**VagaBounds** é uma plataforma backend para centralizar e profissionalizar todo o fluxo de recrutamento em grupos de empresas de tecnologia. Imagine um único ponto de entrada para:
+
+1. **Empresas** criam e gerenciam vagas de estágio, trainee e pleno/sênior.
+2. **Candidatos** se inscrevem, fazem upload de currículos e acessam um feed personalizado.
+3. **Gestores** de cada filial ou grupo acompanham métricas e relatórios em tempo real.
+
+Com **autenticação JWT**, **autorização por perfis** (`COMPANY`, `CANDIDATE`) e **API RESTful** em Java Spring Boot, entregamos uma solução segura, escalável e pronta para integração com qualquer portal web ou mobile.
 
 ---
 
-## Visão Geral
+## 🚀 Funcionalidades Entregues
 
-VagaBounds é uma API RESTful desenvolvida em Java com Spring Boot, cujo objetivo é servir como plataforma central de cadastro e gestão de vagas de tecnologia para empresas e candidatos. Através desta API, diversas filiais de um mesmo grupo empresarial podem consumir e gerenciar de forma unificada:
+### Para **Companies**
 
-* Cadastro de **Company**
-* Cadastro e gerenciamento de **Job**
-* Cadastro e gerenciamento de **Candidate**
-* Processo de **Application** às vagas
-* Relatórios de vagas e candidatos inscritos
+* ✔️ **Cadastro / Login / Perfil** (CRUD completo de conta)
+* ✔️ **Grupos de Empresas**
 
----
+  * Criar grupo
+  * Adicionar / remover membros
+  * Remover grupo
+  * Proprietário e Administradores podem visualizar todas as vagas dos membros do grupo e ter acesso a relatórios personalizados
+* ✔️ **Gerenciamento de Vagas**
 
-## Domínio e Regras de Negócio
+  * Criar, atualizar, fechar manualmente e prorrogar prazo
+  * Listar suas vagas com filtros (abertas, fechadas, período, tipo)
+  * Visualizar detalhes de cada vaga, quantidade de aplicações e candidatos.
+* ✔️ **Candidaturas**
 
-Entidades principais (nomes em Inglês) com `id: Long` auto-increment:
+  * Aprovar ou rejeitar manualmente (com feedback por e‑mail)
+  * Auto‑rejeição por regras de negócio (prazo vencido, requisitos não atendidos)
+  * Visualizar lista de candidatos e baixar currículos
 
-* **Company**
+### Para **Candidates**
 
-    * `id: Long`
-    * `name: String`
-    * `location: String` (inclui remote/hybrid)
-    * `email: String`
-    * `password: String` (armazenada com hash)
+* ✔️ **Cadastro / Login / Perfil** (CRUD completo de conta)
+* ✔️ **Upload & Visualização de Currículo** (MinIO/AWS S3 compatível)
+* ✔️ **Feed Personalizado**
 
-* **Job**
+  * Exibe vagas compatíveis com educação e habilidades
+  * Ordenado por percentual de match e título
+* ✔️ **Gestão de Candidaturas**
 
-    * `id: Long`
-    * `companyId: Long` (FK para Company)
-    * `title: String`
-    * `description: String`
-    * `jobType: Enum {INTERNSHIP, TRAINEE, FULL_TIME, PART_TIME}`
-    * `requirements: List<String>`
-    * `desiredSkills: List<String>`
-    * `deadline: LocalDate` (data limite de inscrição)
-    * **Regras específicas:**
+  * Aplicar-se a vagas (com envio de currículo)
+  * Listar suas aplicações e visualizar status
 
-        * **INTERNSHIP:** exige `semester` (int) e `course` (String)
-        * **TRAINEE:** exige `graduationYear` (int)
-    * Empresas podem **prorrogar** o `deadline` antes de expirar.
+### **Reports** Centralizados
 
-* **Candidate**
+1. 🎯 **Taxa de Conversão por Vaga**
+   Percentual de candidaturas que avançaram de PENDING → APPROVED/REJECTED/AUTO\_REJECTED.
+2. 📊 **Performance de Empresas/Grupos**
+   Vagas abertas, candidaturas totais e aprovações em período.
+3. ⏱️ **Tempo Médio de Decisão**
+   Média (em horas) entre aplicação e aprovação/rejeição por vaga.
 
-    * `id: Long`
-    * `name: String`
-    * `email: String`
-    * `password: String` (hash)
-    * `education: Enum {NONE, UNDERGRAD, GRADUATE}`
-    * `course: String` (opcional)
-    * `graduationYear: Integer` (opcional)
-    * `resumeUrl: String`
+Todos acessíveis via endpoints seguros, ex.:
 
-* **Application**
-
-    * `id: Long`
-    * `candidateId: Long` (FK)
-    * `jobId: Long` (FK)
-    * `appliedAt: LocalDateTime`
-    * **Regras de Consistência:**
-
-        * `UNDERGRAD` pode se candidatar apenas a **INTERNSHIP**
-        * `GRADUATE` pode se candidatar a **TRAINEE** ou **FULL\_TIME**
-        * Após `deadline`, novas candidaturas são rejeitadas.
+```
+GET /reports/conversion-rate  
+GET /reports/company-performance?from=YYYY-MM-DD&to=YYYY-MM-DD  
+GET /reports/decision-time?from=…&to=…
+```
 
 ---
 
-## Requisitos Funcionais
+## 💡 Proposta de Valor
 
-1. **Autenticação e Autorização** via JWT para Company e Candidate.
-2. **Endpoints CRUD** para todas as entidades: `/companies`, `/jobs`, `/candidates`, `/applications`.
-3. **Filtros e Paginação** em listagens (ex.: listar vagas abertas).
-4. **Upload de Currículo** para Candidate (armazenar em AWS S3 ou local).
-5. **Relatórios de Vagas**: por empresa e global.
-6. **Notificações por E-mail**: ao prorrogar deadline ou quando candidato aplicar.
+* **Centralização**: uma única API para todas as filiais e grupos da empresa.
+* **Automação**: envio automático de e‑mails em cada transição de status, liberando tempo dos recrutadores.
+* **Transparência**: candidatos acompanham o ciclo de seleção; gestores veem métricas completas.
+* **Flexibilidade**: filtros avançados, feed inteligente e arquitetura modular para extensão rápida.
 
 ---
 
-## Funcionalidades Principais
+## 🛠️ Tecnologias
 
-### Autenticação e Registro
-- Login para empresas e candidatos
-- Registro de empresas
-- Registro de candidatos
-
-### Gestão de Vagas
-- Cadastro de vagas (estágio, trainee, emprego)
-- Consulta de vagas ativas
-- Atualização de informações da vaga
-- Prorrogação do prazo de inscrição
-- Relatórios de vagas por empresa e grupo empresarial
-
-### Candidaturas
-- Aplicação para vagas com envio de currículo
-- Verificação automática de requisitos
-- Gestão do status das candidaturas
-- Visualização de candidatos por vaga
-
-### Relatórios
-- Relatório de vagas por empresa
-- Relatório de vagas por grupo empresarial
-- Estatísticas gerais do sistema
-
----
-## Tecnologias Utilizadas
-
-- Java 21
-- Maven
-- Spring Boot 3.5.0
-- Spring Web
-- Spring Security
-- Spring Data JPA
-- PostgreSQL Driver
-- Lombok
-- Spring Boot DevTools
+* **Backend**: Java 21, Spring Boot 3.5, Spring Data JPA, Spring Security (JWT)
+* **Storage**: PostgreSQL, MinIO / AWS S3
+* **Validação**: Jakarta Validation (anotações em DTOs e Entities)
 
 ---
 
-## Organização de Código e Padrões
+## 📂 Organização do Código
 
 ```
 src
  └── main
      ├── java
-     │   └── com.vagabounds
-     │       ├── controllers       # Controladores REST
-     │       ├── dtos              # Data Transfer Objects
-     │       ├── exceptions        # Exception Handlers
-     │       ├── models            # JPA Entities
-     │       ├── repositories      # Spring Data Repositories
-     │       ├── security          # JWT & Security Config
-     │       ├── services          # Business Logic
-     │       └── VagaBoundsApplication.java # Classe principal
+     │   └── vagabounds
+     │       ├── controllers   # Endpoints REST
+     │       ├── dtos          # DTOs por domínio (auth, job, report…)
+     │       ├── exceptions    # Handler global e custom exceptions
+     │       ├── models        # JPA Entities
+     │       ├── repositories  # Spring Data + ReportRepository
+     │       ├── security      # JWT, roles, SecurityUtils
+     │       ├── services      # Lógica de negócio + ReportService
+     │       ├── specifications# Filtros dinâmicos (Specification API)
+     │       └── config        # Beans e configuração geral
      └── resources
          ├── application.properties
+         └── docker-compose.yml
 ```
 
 ---
 
-## To-Do List de Features
-
-* [x] Projeto inicial via Spring Initializr
-* [x] Configurar Docker Compose para PostgreSQL
-* [ ] **AuthenticationService** (JWT)
-* [ ] CRUD de **Company**
-* [ ] CRUD de **Job** com regras de deadline
-* [ ] CRUD de **Candidate**, upload de resume
-* [ ] Endpoint de **Application** com validações
-* [ ] Relatórios de vagas por Company e geral
-* [ ] Documentação Swagger/OpenAPI
-* [ ] Testes unitários e de integração
-* [ ] Configurar Checkstyle e Spotless
-* [ ] GitHub Actions CI/CD
-* [ ] Envio de e-mails de notificação
-* [ ] Logs estruturados
-
----
-
-## Contribuições
-
-1. Faça um fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
-3. Faça commit de suas alterações (`git commit -m 'Adiciona nova feature'`)
-4. Envie para a branch (`git push origin feature/nova-feature`)
-5. Abra um Pull Request
+**VagaBounds API** – Conectando candidatos e empresas de tecnologia de forma inteligente e eficiente.
