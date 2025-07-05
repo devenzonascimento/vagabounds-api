@@ -108,4 +108,12 @@ public class JobController {
 
         return ResponseEntity.status(HttpStatus.OK).build();
     }
+
+    @GetMapping("/group-jobs")
+    @PreAuthorize("hasRole('COMPANY')")
+    public ResponseEntity<List<JobDTO>> findGroupJobs() {
+        var jobs = jobService.findGroupJobs();
+        return ResponseEntity.ok(jobs);
+    }
+
 }
