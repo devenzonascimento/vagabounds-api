@@ -201,7 +201,7 @@ public class JobService {
 
         var candidate = app.getCandidate();
 
-        var resumeUrl = resumeService.loadCandidateResume(candidateId);
+        var resumeUrl = resumeService.loadCandidateResume(candidate.getAccount().getId());
 
         return new UpdateCandidateRequest(
             candidate.getId(),
