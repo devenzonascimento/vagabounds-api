@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vagabounds.dtos.application.AppliedJobFilter;
+import vagabounds.dtos.candidate.UpdateCandidateRequest;
 import vagabounds.dtos.generic.PageResult;
 import vagabounds.dtos.job.*;
 import vagabounds.enums.ApplicationStatus;
@@ -92,6 +93,16 @@ public class JobController {
         return ResponseEntity.ok(jobService.findAllAppliedJobs(filter));
     }
 
+    @GetMapping("/candidate-information/{jobId}/{candidateId}")
+    @PreAuthorize("hasRole('COMPANY') or hasRole('GROUP')")
+    public ResponseEntity<UpdateCandidateRequest> candidateInformationAndResume (
+        @PathVariable Long jobId,
+        @PathVariable Long candidateId
+    )
+    {
+        var candidateInformation = jobService.candidateInformationAndResume(jobId, candidateId);
+        return ResponseEntity.ok(candidateInformation);
+    }
 
     @PostMapping("/extend")
     @PreAuthorize("hasRole('COMPANY')")
