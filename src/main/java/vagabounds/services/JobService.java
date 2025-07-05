@@ -94,8 +94,7 @@ public class JobService {
     public Page<Job> listJobsWithFilter(JobFilterRequest filter) {
         var candidate = getCurrentCompany();
 
-        Specification<Job> spec = Specification
-            .where(JobSpecifications.belongsToCompany(candidate.getId()))
+        Specification<Job> spec = JobSpecifications.belongsToCompany(candidate.getId())
             .and(JobSpecifications.isOpen(filter.isOpen()))
             .and(JobSpecifications.createdBetween(filter.createdFrom(), filter.createdTo()));
 
@@ -159,9 +158,9 @@ public class JobService {
 
     public List<AppliedJobList> findAllAppliedJobs(AppliedJobFilter filter) {
 
-        Specification<Application> spec = Specification
-            .where(ApplicationSpecifications.hasCandidateId(filter.candidateId()))
-            .and(ApplicationSpecifications.hasStatus(filter.status()))
+        Specification<Application> spec = Specification.anyOf(
+                ApplicationSpecifications.hasCandidateId(filter.candidateId())
+            ).and(ApplicationSpecifications.hasStatus(filter.status()))
             .and(ApplicationSpecifications.hasAppliedAt(filter.appliedAt()))
             .and(ApplicationSpecifications.hasJobType(filter.jobType()))
             .and(ApplicationSpecifications.hasJobModality(filter.jobModality()));
