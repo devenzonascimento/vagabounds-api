@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import vagabounds.dtos.company.UpdateCompanyRequest;
 import vagabounds.enums.GroupPermission;
 import vagabounds.models.Company;
+import vagabounds.repositories.AccountRepository;
 import vagabounds.repositories.CompanyRepository;
 import vagabounds.security.SecurityUtils;
 
@@ -14,6 +15,9 @@ import vagabounds.security.SecurityUtils;
 public class CompanyService {
     @Autowired
     CompanyRepository companyRepository;
+
+    @Autowired
+    AccountRepository accountRepository;
 
     public void updateCompany(UpdateCompanyRequest request) {
         var company = getCurrentCompany();
@@ -75,9 +79,13 @@ public class CompanyService {
             }
         }
 
+        var account = company.getAccount();
+
         company.setIsDeleted(true);
+        account.setIsDeleted(true);
 
         companyRepository.save(company);
+        accountRepository.save(account);
     }
 
     private Company getCurrentCompany() {

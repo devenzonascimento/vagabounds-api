@@ -9,6 +9,7 @@ import vagabounds.dtos.group.RemoveMemberRequest;
 import vagabounds.enums.GroupPermission;
 import vagabounds.models.Group;
 import vagabounds.models.Company;
+import vagabounds.repositories.AccountRepository;
 import vagabounds.repositories.CompanyRepository;
 import vagabounds.security.SecurityUtils;
 
@@ -18,6 +19,9 @@ import java.util.List;
 public class GroupService {
     @Autowired
     CompanyRepository companyRepository;
+
+    @Autowired
+    AccountRepository accountRepository;
 
     @Autowired
     AuthService authService;
@@ -44,9 +48,13 @@ public class GroupService {
             throw new RuntimeException("Cannot remove yourself from the group.");
         }
 
+        var account = memberToRemove.getAccount();
+
         memberToRemove.setIsDeleted(true);
+        account.setIsDeleted(true);
 
         companyRepository.save(memberToRemove);
+        accountRepository.save(account);
     }
 
     @Transactional
