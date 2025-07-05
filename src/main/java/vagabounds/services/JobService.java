@@ -7,15 +7,20 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import vagabounds.dtos.application.AppliedJobFilter;
+import vagabounds.dtos.job.AppliedJobList;
 import vagabounds.dtos.job.CreateJobRequest;
 import vagabounds.dtos.job.ExtendsExpiresAtRequest;
 import vagabounds.dtos.job.JobFilterRequest;
 import vagabounds.dtos.job.UpdateJobRequest;
+import vagabounds.models.Application;
 import vagabounds.models.Company;
 import vagabounds.models.Job;
+import vagabounds.repositories.ApplicationRepository;
 import vagabounds.repositories.CompanyRepository;
 import vagabounds.repositories.JobRepository;
 import vagabounds.security.SecurityUtils;
+import vagabounds.specifications.ApplicationSpecifications;
 import vagabounds.specifications.JobSpecifications;
 
 import java.util.List;
@@ -27,6 +32,9 @@ public class JobService {
 
     @Autowired
     CompanyRepository companyRepository;
+    
+    @Autowired
+    ApplicationRepository applicationRepository;
 
     public void createJob(CreateJobRequest request) {
         var company = getCurrentCompany();
@@ -83,8 +91,7 @@ public class JobService {
     public Page<Job> listJobsWithFilter(JobFilterRequest filter) {
         var candidate = getCurrentCompany();
 
-        Specification<Job> spec = Specification
-            .where(JobSpecifications.belongsToCompany(candidate.getId()))
+        Specification<Job> spec = JobSpecifications.belongsToCompany(candidate.getId())
             .and(JobSpecifications.isOpen(filter.isOpen()))
             .and(JobSpecifications.createdBetween(filter.createdFrom(), filter.createdTo()));
 
@@ -144,5 +151,27 @@ public class JobService {
         }
 
         return company;
+    }
+
+    public List<AppliedJobList> findAllAppliedJobs(AppliedJobFilter filter) {
+
+        Specification<Application> spec = Specification.anyOf(
+                ApplicationSpecifications.hasCandidateId(filter.candidateId())
+            ).and(ApplicationSpecifications.hasStatus(filter.status()))
+            .and(ApplicationSpecifications.hasAppliedAt(filter.appliedAt()))
+            .and(ApplicationSpecifications.hasJobType(filter.jobType()))
+            .and(ApplicationSpecifications.hasJobModality(filter.jobModality()));
+
+        return applicationRepository.findAll(spec).stream()
+            .map(app -> new AppliedJobList(
+                app.getJob().getCompany().getName(),
+                app.getJob().getId(),
+                app.getJob().getTitle(),
+                app.getJob().getJobType(),
+                app.getJob().getJobModality(),
+                app.getAppliedAt(),
+                app.getStatus()
+            ))
+            .toList();
     }
 }

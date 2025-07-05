@@ -2,11 +2,14 @@ package vagabounds.services;
 
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import vagabounds.dtos.application.AppliedJobFilter;
 import vagabounds.dtos.application.ApplyToJobRequest;
 import vagabounds.dtos.application.ApproveCandidateRequest;
 import vagabounds.dtos.application.RejectCandidateRequest;
+import vagabounds.dtos.job.AppliedJobList;
 import vagabounds.enums.ApplicationStatus;
 import vagabounds.models.Application;
 import vagabounds.models.Candidate;
@@ -15,11 +18,13 @@ import vagabounds.repositories.CandidateRepository;
 import vagabounds.repositories.JobRepository;
 import vagabounds.repositories.StorageRepository;
 import vagabounds.security.SecurityUtils;
+import vagabounds.specifications.ApplicationSpecifications;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
+import java.util.List;
 
 @Service
 public class ApplicationService {
@@ -196,5 +201,27 @@ public class ApplicationService {
         }
 
         return candidate;
+    }
+
+    public List<AppliedJobList> findAllAppliedJobs(AppliedJobFilter filter) {
+
+        Specification<Application> spec = Specification
+            .where(ApplicationSpecifications.hasCandidateId(filter.candidateId()))
+            .and(ApplicationSpecifications.hasStatus(filter.status()))
+            .and(ApplicationSpecifications.hasAppliedAt(filter.appliedAt()))
+            .and(ApplicationSpecifications.hasJobType(filter.jobType()))
+            .and(ApplicationSpecifications.hasJobModality(filter.jobModality()));
+
+        return applicationRepository.findAll(spec).stream()
+            .map(app -> new AppliedJobList(
+                app.getJob().getCompany().getName(),
+                app.getJob().getId(),
+                app.getJob().getTitle(),
+                app.getJob().getJobType(),
+                app.getJob().getJobModality(),
+                app.getAppliedAt(),
+                app.getStatus()
+            ))
+            .toList();
     }
 }
