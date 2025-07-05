@@ -20,6 +20,9 @@ public record RegisterCompanyRequest(
     String cnpj,
 
     @NotBlank
-    String address
+    String address,
+
+    Long groupId
+
 ) {
 }

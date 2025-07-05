@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vagabounds.dtos.company.UpdateCompanyRequest;
+import vagabounds.enums.GroupPermission;
 import vagabounds.models.Company;
 import vagabounds.repositories.CompanyRepository;
 import vagabounds.security.SecurityUtils;
@@ -59,6 +60,19 @@ public class CompanyService {
 
         if (hasActiveJobs) {
             throw new RuntimeException("Cannot delete company with active jobs. Please close all jobs first.");
+        }
+
+        if (GroupPermission.OWNER.equals(company.getPermission()) &&
+                company.getGroup() != null) {
+
+            var otherMembers = company.getGroup().getCompanies()
+                    .stream()
+                    .filter(c -> !c.getId().equals(company.getId()) && !c.getIsDeleted())
+                    .count();
+
+            if (otherMembers > 0) {
+                throw new RuntimeException("Cannot delete company. You are the group owner and there are other members.");
+            }
         }
 
         company.setIsDeleted(true);

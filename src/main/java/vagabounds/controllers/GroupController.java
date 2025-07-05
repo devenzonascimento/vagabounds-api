@@ -6,10 +6,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import vagabounds.dtos.group.AddMemberRequest;
-import vagabounds.dtos.group.GroupCompaniesDTO;
-import vagabounds.dtos.group.GroupDTO;
-import vagabounds.dtos.group.RemoveMemberRequest;
+import vagabounds.dtos.auth.RegisterCompanyRequest;
+import vagabounds.dtos.company.CompanyDTO;
+import vagabounds.dtos.group.*;
 import vagabounds.services.GroupService;
 
 import java.util.List;
@@ -20,18 +19,18 @@ public class GroupController {
     @Autowired
     GroupService groupService;
 
-    @PostMapping("create/{groupName}")
+    @GetMapping("/members")
     @PreAuthorize("hasRole('COMPANY')")
-    public ResponseEntity<Void> createGroup(@PathVariable String groupName) {
-        groupService.createGroup(groupName);
+    public ResponseEntity<List<GroupMemberDTO>> getAllMembers() {
+        var members = groupService.findAllMembers();
 
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.ok(GroupMemberDTO.fromCompanies(members));
     }
 
     @PostMapping("add-member")
     @PreAuthorize("hasRole('COMPANY')")
-    public ResponseEntity<Void> addMember(@RequestBody @Valid AddMemberRequest request) {
-        groupService.addMember(request);
+    public ResponseEntity<Void> addMember(@RequestBody @Valid RegisterCompanyRequest request) {
+        groupService.registerCompany(request);
 
         return ResponseEntity.status(HttpStatus.OK).build();
     }
@@ -46,17 +45,17 @@ public class GroupController {
 
     @GetMapping
     @PreAuthorize("hasRole('COMPANY')")
-    public ResponseEntity<List<GroupDTO>> findAll() {
-        var groups = groupService.findAll();
+    public ResponseEntity<List<CompanyDTO>> findAll() {
+        var groups = groupService.findAllMembers();
 
-        return ResponseEntity.ok(GroupDTO.fromGroups(groups));
+        return ResponseEntity.ok(CompanyDTO.fromCompanies(groups));
     }
 
-    @GetMapping("/{groupId}")
+    @PutMapping("/change-permission")
     @PreAuthorize("hasRole('COMPANY')")
-    public ResponseEntity<GroupCompaniesDTO> findById(@PathVariable Long groupId) {
-        var group = groupService.findById(groupId);
+    public ResponseEntity<Void> changePermission(@RequestBody @Valid ChangePermissionRequest request) {
+        groupService.changePermission(request);
 
-        return ResponseEntity.ok(GroupCompaniesDTO.fromGroup(group));
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

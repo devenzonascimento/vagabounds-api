@@ -24,5 +24,5 @@ public class Group {
     private String name;
 
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<GroupMembership> memberships = new HashSet<>();
+    private Set<Company> companies = new HashSet<>();
 }
