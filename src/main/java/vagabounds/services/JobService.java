@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import vagabounds.dtos.application.AppliedJobFilter;
+import vagabounds.dtos.candidate.UpdateCandidateRequest;
 import vagabounds.dtos.job.*;
 import vagabounds.enums.GroupPermission;
 import vagabounds.models.Application;
@@ -19,7 +20,6 @@ import vagabounds.repositories.JobRepository;
 import vagabounds.security.SecurityUtils;
 import vagabounds.specifications.ApplicationSpecifications;
 import vagabounds.specifications.JobSpecifications;
-
 import java.util.List;
 
 @Service
@@ -32,6 +32,9 @@ public class JobService {
     
     @Autowired
     ApplicationRepository applicationRepository;
+
+    @Autowired
+    ResumeService resumeService;
 
     public void createJob(CreateJobRequest request) {
         var company = getCurrentCompany();
@@ -175,6 +178,28 @@ public class JobService {
             ))
             .toList();
     }
+
+    public UpdateCandidateRequest candidateInformationAndResume(Long jobId, Long candidateId) {
+
+        var app = applicationRepository.findByJobIdAndCandidateId(jobId, candidateId)
+            .orElseThrow(() -> new RuntimeException("There is no application job with the given information."));
+
+        var candidate = app.getCandidate();
+
+        var resumeUrl = resumeService.loadCandidateResume(candidateId);
+
+        return new UpdateCandidateRequest(
+            candidate.getId(),
+            candidate.getName(),
+            candidate.getAddress(),
+            candidate.getEducation(),
+            candidate.getCourse(),
+            candidate.getSemester(),
+            candidate.getGraduationYear(),
+            resumeUrl
+        );
+    }
+
 
     public List<JobDTO> findGroupJobs() {
         var company = getCurrentCompany();
