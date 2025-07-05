@@ -9,11 +9,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import vagabounds.dtos.application.AppliedJobFilter;
 import vagabounds.dtos.candidate.UpdateCandidateRequest;
-import vagabounds.dtos.job.AppliedJobList;
-import vagabounds.dtos.job.CreateJobRequest;
-import vagabounds.dtos.job.ExtendsExpiresAtRequest;
-import vagabounds.dtos.job.JobFilterRequest;
-import vagabounds.dtos.job.UpdateJobRequest;
+import vagabounds.dtos.job.*;
+import vagabounds.enums.GroupPermission;
 import vagabounds.models.Application;
 import vagabounds.models.Company;
 import vagabounds.models.Job;
@@ -61,13 +58,15 @@ public class JobService {
 
         var company = getCurrentCompany();
 
-        if (!job.getCompany().getId().equals(company.getId())) {
+        if (!job.getCompany().getId().equals(company.getId()) || !GroupPermission.OWNER.equals(company.getPermission())) {
             throw new RuntimeException("You don't have permission to edit job informations, this job is not belongs to your company");
         }
 
         if (!job.getIsOpen() && job.getClosedAt() != null) {
             throw new RuntimeException("This job is closed and no longer allows information updates.");
         }
+
+        validateCanManageJob(company, job);
 
         job.update(
             request.title(),
@@ -83,18 +82,19 @@ public class JobService {
 
     public Job findById(Long jobId) {
         var job = jobRepository.findById(jobId).orElse(null);
+        var company = getCurrentCompany();
 
-        if (job == null || job.getIsDeleted()) {
-            throw new RuntimeException("Job not found.");
-        }
+        validateCanViewJob(company, job);
 
         return job;
     }
 
     public Page<Job> listJobsWithFilter(JobFilterRequest filter) {
-        var candidate = getCurrentCompany();
+        var company = getCurrentCompany();
 
-        Specification<Job> spec = JobSpecifications.belongsToCompany(candidate.getId())
+        validateCanViewGroupJobs(company);
+
+        Specification<Job> spec = JobSpecifications.belongsToCompany(company.getId())
             .and(JobSpecifications.isOpen(filter.isOpen()))
             .and(JobSpecifications.createdBetween(filter.createdFrom(), filter.createdTo()));
 
@@ -113,6 +113,8 @@ public class JobService {
             return jobs;
         }
 
+        validateCanViewGroupJobs(company);
+
         return jobs.stream().filter(j -> !j.getIsDeleted()).toList();
     }
 
@@ -121,9 +123,7 @@ public class JobService {
 
         var company = getCurrentCompany();
 
-        if (!job.getCompany().getId().equals(company.getId())) {
-            throw new RuntimeException("You don't have permission to edit job informations, this job is not belongs to your company");
-        }
+        validateCanManageJob(company, job);
 
         job.extendExpiresAt(request.newExpiresAt());
 
@@ -135,9 +135,7 @@ public class JobService {
 
         var company = getCurrentCompany();
 
-        if (!job.getCompany().getId().equals(company.getId())) {
-            throw new RuntimeException("You don't have permission to edit job informations, this job is not belongs to your company");
-        }
+        validateCanManageJob(company, job);
 
         job.closeManually();
 
@@ -157,6 +155,9 @@ public class JobService {
     }
 
     public List<AppliedJobList> findAllAppliedJobs(AppliedJobFilter filter) {
+        var company = getCurrentCompany();
+
+        validateCanViewGroupJobs(company);
 
         Specification<Application> spec = Specification.anyOf(
                 ApplicationSpecifications.hasCandidateId(filter.candidateId())
@@ -199,4 +200,88 @@ public class JobService {
         );
     }
 
+
+    public List<JobDTO> findGroupJobs() {
+        var company = getCurrentCompany();
+
+        validateCanViewGroupJobs(company);
+
+        if (company.getGroup() == null) {
+            throw new RuntimeException("Company is not part of any group.");
+        }
+
+        List<Job> jobs;
+
+        if (GroupPermission.MEMBER.equals(company.getPermission())) {
+            jobs = jobRepository.findAllByGroupIdAndCompanyIdAndIsActiveTrue(
+                    company.getGroup().getId(),
+                    company.getId()
+            );
+        } else if (GroupPermission.ADMIN.equals(company.getPermission()) ||
+                GroupPermission.OWNER.equals(company.getPermission())) {
+            jobs = jobRepository.findAllByGroupIdAndIsActiveTrue(company.getGroup().getId());
+        } else {
+            throw new RuntimeException("Invalid permission level.");
+        }
+
+        return JobDTO.fromJobs(jobs);
+    }
+
+
+    private void validateCanManageJob(Company company, Job job) {
+        if (GroupPermission.OWNER.equals(company.getPermission())) {
+            if (company.getGroup() != null && job.getCompany().getGroup() != null &&
+                    company.getGroup().getId().equals(job.getCompany().getGroup().getId())) {
+                return;
+            }
+            if (company.getId().equals(job.getCompany().getId())) {
+                return;
+            }
+        }
+
+        if (GroupPermission.ADMIN.equals(company.getPermission()) ||
+                GroupPermission.MEMBER.equals(company.getPermission())) {
+            if (company.getId().equals(job.getCompany().getId())) {
+                return;
+            }
+        }
+
+        throw new RuntimeException("You don't have permission to manage this job.");
+    }
+
+    private void validateCanViewJob(Company company, Job job) {
+        if (GroupPermission.OWNER.equals(company.getPermission())) {
+            if (company.getGroup() != null && job.getCompany().getGroup() != null &&
+                    company.getGroup().getId().equals(job.getCompany().getGroup().getId())) {
+                return;
+            }
+            if (company.getId().equals(job.getCompany().getId())) {
+                return;
+            }
+        }
+
+        if (GroupPermission.ADMIN.equals(company.getPermission())) {
+            if (company.getGroup() != null && job.getCompany().getGroup() != null &&
+                    company.getGroup().getId().equals(job.getCompany().getGroup().getId())) {
+                return;
+            }
+        }
+
+        if (GroupPermission.MEMBER.equals(company.getPermission())) {
+            if (company.getId().equals(job.getCompany().getId())) {
+                return;
+            }
+        }
+
+        throw new RuntimeException("You don't have permission to view this job.");
+    }
+
+    private void validateCanViewGroupJobs(Company company) {
+        if (!GroupPermission.MEMBER.equals(company.getPermission()) &&
+                !GroupPermission.ADMIN.equals(company.getPermission()) &&
+                !GroupPermission.OWNER.equals(company.getPermission())) {
+            throw new RuntimeException("You don't have permission to view group jobs.");
+        }
+
+    }
 }
