@@ -84,6 +84,31 @@ public class Application {
         this.updatedAt = now;
     }
 
+    /**
+     * Construtor para criar a aplicação de vaga usando o curriculo.
+     */
+    public Application(Job job, Candidate candidate) {
+        if (!job.getIsOpen()) {
+            throw new RuntimeException("OOPS! The job you are applying is already closed.");
+        }
+
+        var errorMessage = validateJobApplication(job, candidate, null);
+
+        if (!errorMessage.isBlank()) {
+            this.status = ApplicationStatus.AUTO_REJECTED;
+            this.decisionReason = errorMessage;
+        } else {
+            this.status = ApplicationStatus.APPLIED;
+        }
+
+        this.job = job;
+        this.candidate = candidate;
+
+        var now = LocalDateTime.now();
+        this.appliedAt = now;
+        this.updatedAt = now;
+    }
+
     public void approve(String reason) {
         if (status != ApplicationStatus.APPLIED) {
             throw new RuntimeException("A decision has already been made for this job application.");
@@ -132,6 +157,10 @@ public class Application {
                     return "It is required to inform the graduation year.";
                 }
             }
+        }
+
+        if (candidateSkills == null) {
+            return "";
         }
 
         var requirementsMatched = job.getRequirements()

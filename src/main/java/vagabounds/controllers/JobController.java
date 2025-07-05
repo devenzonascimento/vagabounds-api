@@ -3,14 +3,20 @@ package vagabounds.controllers;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import vagabounds.dtos.application.AppliedJobFilter;
 import vagabounds.dtos.generic.PageResult;
 import vagabounds.dtos.job.*;
+import vagabounds.enums.ApplicationStatus;
+import vagabounds.enums.JobModality;
+import vagabounds.enums.JobType;
 import vagabounds.services.JobService;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -37,7 +43,19 @@ public class JobController {
 
     @GetMapping
     @PreAuthorize("hasRole('COMPANY')")
-    public ResponseEntity<PageResult<JobDTO>> list(JobFilterRequest filter) {
+    public ResponseEntity<PageResult<JobDTO>> list(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int pageSize,
+        @RequestParam(defaultValue = "createdAt") String sortBy,
+        @RequestParam(defaultValue = "DESC") String direction,
+        @RequestParam(required = false) Boolean isOpen,
+        @RequestParam(required = false) LocalDate createdFrom,
+        @RequestParam(required = false) LocalDate createdTo
+    ) {
+        JobFilterRequest filter = new JobFilterRequest(
+            page, pageSize, sortBy, direction, isOpen, createdFrom, createdTo
+        );
+
         var jobsPage = jobService.listJobsWithFilter(filter);
 
         Page<JobDTO> dtoPage = jobsPage.map(JobDTO::fromJob);
@@ -46,10 +64,11 @@ public class JobController {
     }
 
     @GetMapping("/{jobId}")
-    public ResponseEntity<JobDTO> findById(@PathVariable Long jobId) {
+    @PreAuthorize("hasRole('COMPANY')")
+    public ResponseEntity<JobDetailsReponse> findById(@PathVariable Long jobId) {
         var job = jobService.findById(jobId);
 
-        return ResponseEntity.ok(JobDTO.fromJob(job));
+        return ResponseEntity.ok(JobDetailsReponse.fromJob(job));
     }
 
     @GetMapping("/by-company")
@@ -59,6 +78,20 @@ public class JobController {
 
         return ResponseEntity.ok(JobDTO.fromJobs(jobs));
     }
+
+    @GetMapping("/applied-jobs")
+    @PreAuthorize("hasRole('CANDIDATE')")
+    public ResponseEntity<List<AppliedJobList>> findAppliedJobs(
+        @RequestParam Long candidateId,
+        @RequestParam(required = false) ApplicationStatus status,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate appliedAt,
+        @RequestParam(required = false) JobType jobType,
+        @RequestParam(required = false) JobModality jobModality
+    ) {
+        var filter = new AppliedJobFilter(candidateId, status, appliedAt, jobType, jobModality);
+        return ResponseEntity.ok(jobService.findAllAppliedJobs(filter));
+    }
+
 
     @PostMapping("/extend")
     @PreAuthorize("hasRole('COMPANY')")

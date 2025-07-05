@@ -13,6 +13,8 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequ
 
 import java.io.IOException;
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class StorageRepository {
@@ -65,5 +67,30 @@ public class StorageRepository {
         PresignedGetObjectRequest presigned = presigner.presignGetObject(presignRequest);
 
         return presigned.url().toString();
+    }
+
+    public static String buildResumeFileName(String candidateName, String originalFileName) {
+        // 1. Normaliza o nome (por ex. remove espaços, acentos, etc.)
+        String safeName = candidateName
+            .toLowerCase()
+            .replaceAll("[^a-z0-9]+", "-")
+            .replaceAll("(^-|-$)", "");
+
+        // 2. Formata timestamp sem caracteres inválidos (yyyyMMddHHmmss)
+        String timestamp = LocalDateTime.now()
+            .format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+
+        // 3. Extrai extensão original do arquivo
+        String extension = "";
+        if (originalFileName != null && originalFileName.contains(".")) {
+            extension = originalFileName.substring(originalFileName.lastIndexOf('.') + 1);
+        }
+
+        // 4. Monta a key completa
+        return String.format("resume-%s-%s.%s",
+            safeName,
+            timestamp,
+            extension
+        );
     }
 }
