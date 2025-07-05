@@ -133,28 +133,28 @@ public class Application {
         switch (job.getJobType()) {
             case INTERNSHIP -> {
                 if (!candidate.getEducation().equals(CandidateEducation.ENROLLED)) {
-                    return "Sorry, you must be a student to apply.";
+                    return "Desculpe, você precisa ser um estudante para se candidatar.";
                 }
 
                 if (candidate.getCourse().isBlank()) {
-                    return "It is required to inform the course name.";
+                    return "É necessário informar o nome do curso.";
                 }
 
                 if (candidate.getSemester() == null) {
-                    return "It is required to inform the semester.";
+                    return "É necessário informar o semestre.";
                 }
             }
             case TRAINEE -> {
                 if (!candidate.getEducation().equals(CandidateEducation.GRADUATED)) {
-                    return "Sorry, you must have a graduate to apply.";
+                    return "Desculpe, você precisa ser graduado para se candidatar.";
                 }
 
                 if (candidate.getCourse().isBlank()) {
-                    return "It is required to inform the course name.";
+                    return "É necessário informar o nome do curso.";
                 }
 
                 if (candidate.getGraduationYear() == null) {
-                    return "It is required to inform the graduation year.";
+                    return "É obrigatório informar o ano de formatura.";
                 }
             }
         }
