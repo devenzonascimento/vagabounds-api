@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import vagabounds.dtos.application.AppliedJobFilter;
 import vagabounds.dtos.application.AppliedJobRequest;
 import vagabounds.dtos.job.AppliedJobList;
 import vagabounds.dtos.job.CreateJobRequest;
@@ -21,6 +22,7 @@ import vagabounds.repositories.ApplicationRepository;
 import vagabounds.repositories.CompanyRepository;
 import vagabounds.repositories.JobRepository;
 import vagabounds.security.SecurityUtils;
+import vagabounds.specifications.ApplicationSpecifications;
 import vagabounds.specifications.JobSpecifications;
 
 import java.util.List;
@@ -157,11 +159,16 @@ public class JobService {
         return company;
     }
 
-    public List<AppliedJobList> findAllAppliedJobs(AppliedJobRequest request) {
-        
-        return applicationRepository.findAll().stream()
-            .filter(app -> app.getStatus()  != null &&
-                app.getCandidate().getId().equals(request.candidateId()))
+    public List<AppliedJobList> findAllAppliedJobs(AppliedJobFilter filter) {
+
+        Specification<Application> spec = Specification
+            .where(ApplicationSpecifications.hasCandidateId(filter.candidateId()))
+            .and(ApplicationSpecifications.hasStatus(filter.status()))
+            .and(ApplicationSpecifications.hasAppliedAt(filter.appliedAt()))
+            .and(ApplicationSpecifications.hasJobType(filter.jobType()))
+            .and(ApplicationSpecifications.hasJobModality(filter.jobModality()));
+
+        return applicationRepository.findAll(spec).stream()
             .map(app -> new AppliedJobList(
                 app.getJob().getCompany().getName(),
                 app.getJob().getId(),
