@@ -10,9 +10,8 @@ import org.springframework.web.multipart.MultipartFile;
 import vagabounds.dtos.application.ApplyToJobRequest;
 import vagabounds.dtos.application.ApproveCandidateRequest;
 import vagabounds.dtos.application.RejectCandidateRequest;
-import vagabounds.security.SecurityUtils;
 import vagabounds.services.ApplicationService;
-
+import vagabounds.services.JobService;
 import java.util.Map;
 
 @RestController
