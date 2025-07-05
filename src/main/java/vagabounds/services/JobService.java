@@ -12,9 +12,11 @@ import vagabounds.dtos.candidate.UpdateCandidateRequest;
 import vagabounds.dtos.job.*;
 import vagabounds.enums.GroupPermission;
 import vagabounds.models.Application;
+import vagabounds.models.Candidate;
 import vagabounds.models.Company;
 import vagabounds.models.Job;
 import vagabounds.repositories.ApplicationRepository;
+import vagabounds.repositories.CandidateRepository;
 import vagabounds.repositories.CompanyRepository;
 import vagabounds.repositories.JobRepository;
 import vagabounds.security.SecurityUtils;
@@ -32,6 +34,9 @@ public class JobService {
     
     @Autowired
     ApplicationRepository applicationRepository;
+
+    @Autowired
+    CandidateRepository candidateRepository;
 
     @Autowired
     ResumeService resumeService;
@@ -154,13 +159,23 @@ public class JobService {
         return company;
     }
 
-    public List<AppliedJobList> findAllAppliedJobs(AppliedJobFilter filter) {
-        var company = getCurrentCompany();
+    private Candidate getCurrentCandidate() {
+        var accountId = SecurityUtils.getAccountId();
 
-        validateCanViewGroupJobs(company);
+        var candidate = candidateRepository.findByAccountId(accountId).orElse(null);
+
+        if (candidate == null || candidate.getIsDeleted()) {
+            throw new RuntimeException("Candidate not found.");
+        }
+
+        return candidate;
+    }
+
+    public List<AppliedJobList> findAllAppliedJobs(AppliedJobFilter filter) {
+        var candidate = getCurrentCandidate();
 
         Specification<Application> spec = Specification.anyOf(
-                ApplicationSpecifications.hasCandidateId(filter.candidateId())
+                ApplicationSpecifications.hasCandidateId(candidate.getId())
             ).and(ApplicationSpecifications.hasStatus(filter.status()))
             .and(ApplicationSpecifications.hasAppliedAt(filter.appliedAt()))
             .and(ApplicationSpecifications.hasJobType(filter.jobType()))

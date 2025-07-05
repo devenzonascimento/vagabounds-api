@@ -113,7 +113,6 @@ public class Candidate {
         this.course = course;
         this.semester = semester;
         this.graduationYear = graduationYear;
-        this.resumeUrl = resumeUrl;
 
         this.isDeleted = false;
         this.createdAt = LocalDateTime.now();

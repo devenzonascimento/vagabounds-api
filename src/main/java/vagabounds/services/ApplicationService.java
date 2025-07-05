@@ -202,26 +202,4 @@ public class ApplicationService {
 
         return candidate;
     }
-
-    public List<AppliedJobList> findAllAppliedJobs(AppliedJobFilter filter) {
-
-        Specification<Application> spec = Specification
-            .where(ApplicationSpecifications.hasCandidateId(filter.candidateId()))
-            .and(ApplicationSpecifications.hasStatus(filter.status()))
-            .and(ApplicationSpecifications.hasAppliedAt(filter.appliedAt()))
-            .and(ApplicationSpecifications.hasJobType(filter.jobType()))
-            .and(ApplicationSpecifications.hasJobModality(filter.jobModality()));
-
-        return applicationRepository.findAll(spec).stream()
-            .map(app -> new AppliedJobList(
-                app.getJob().getCompany().getName(),
-                app.getJob().getId(),
-                app.getJob().getTitle(),
-                app.getJob().getJobType(),
-                app.getJob().getJobModality(),
-                app.getAppliedAt(),
-                app.getStatus()
-            ))
-            .toList();
-    }
 }

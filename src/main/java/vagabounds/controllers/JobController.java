@@ -103,13 +103,13 @@ public class JobController {
     @GetMapping("/applied-jobs")
     @PreAuthorize("hasRole('CANDIDATE')")
     public ResponseEntity<List<AppliedJobList>> findAppliedJobs(
-        @RequestParam Long candidateId,
         @RequestParam(required = false) ApplicationStatus status,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate appliedAt,
         @RequestParam(required = false) JobType jobType,
         @RequestParam(required = false) JobModality jobModality
     ) {
-        var filter = new AppliedJobFilter(candidateId, status, appliedAt, jobType, jobModality);
+        var filter = new AppliedJobFilter(status, appliedAt, jobType, jobModality);
+
         return ResponseEntity.ok(jobService.findAllAppliedJobs(filter));
     }
 
