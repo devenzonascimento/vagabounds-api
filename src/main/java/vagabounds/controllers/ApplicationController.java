@@ -19,7 +19,7 @@ import java.util.Map;
 public class ApplicationController {
     @Autowired
     ApplicationService applicationService;
-    
+
     @PostMapping("/apply-to")
     @PreAuthorize("hasRole('CANDIDATE')")
     public ResponseEntity<Void> applyTo(@RequestBody @Valid ApplyToJobRequest request) {

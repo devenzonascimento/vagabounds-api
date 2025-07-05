@@ -32,10 +32,7 @@ public class JobService {
 
     @Autowired
     CompanyRepository companyRepository;
-
-    @Autowired
-    ApplicationService applicationService;
-
+    
     @Autowired
     ApplicationRepository applicationRepository;
 
